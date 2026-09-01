@@ -1,18 +1,19 @@
 const { Client } = require('pg');
+require('dotenv').config();
 
 const client = new Client({
-  user: 'postgres',
-  password: '057084332',
-  host: 'localhost',
-  port: 5432,
-  database: 'football_betting'
+  user: process.env.DB_USER || 'postgres',
+  password: process.env.DB_PASSWORD || 'postgres',
+  host: process.env.DB_HOST || 'localhost',
+  port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 5432,
+  database: process.env.DB_NAME || 'football_betting',
+  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : undefined,
 });
 
 async function createTables() {
   await client.connect();
-  
+
   const queryText = `
-    -- ลบตารางเก่าทิ้งเพื่อให้สร้างโครงสร้างใหม่ทั้งหมด
     DROP TABLE IF EXISTS bets CASCADE;
     DROP TABLE IF EXISTS odds CASCADE;
     DROP TABLE IF EXISTS matches CASCADE;
@@ -21,8 +22,10 @@ async function createTables() {
     CREATE TABLE users (
       id SERIAL PRIMARY KEY,
       username VARCHAR(50) UNIQUE NOT NULL,
-      password VARCHAR(255) NOT NULL,
-      balance NUMERIC(10, 2) DEFAULT 1000.00
+      password_hash VARCHAR(255) NOT NULL,
+      role VARCHAR(20) DEFAULT 'USER',
+      balance NUMERIC(10, 2) DEFAULT 1000.00,
+      created_at TIMESTAMP DEFAULT NOW()
     );
 
     CREATE TABLE matches (
@@ -30,6 +33,8 @@ async function createTables() {
       home_team VARCHAR(100),
       away_team VARCHAR(100),
       kickoff_time TIMESTAMP DEFAULT NOW(),
+      home_score INT DEFAULT 0,
+      away_score INT DEFAULT 0,
       status VARCHAR(20) DEFAULT 'OPEN'
     );
 
@@ -48,15 +53,17 @@ async function createTables() {
 
     CREATE TABLE bets (
       id SERIAL PRIMARY KEY,
-      user_id INT REFERENCES users(id),
-      match_id INT REFERENCES matches(id),
+      user_id INT REFERENCES users(id) ON DELETE CASCADE,
+      match_id INT REFERENCES matches(id) ON DELETE CASCADE,
       bet_type VARCHAR(10),
       bet_selection VARCHAR(10),
       stake NUMERIC(10,2),
-      status VARCHAR(20) DEFAULT 'PENDING'
+      odds_rate NUMERIC(5,2) DEFAULT 1.0,
+      status VARCHAR(20) DEFAULT 'PENDING',
+      payout NUMERIC(10,2) DEFAULT 0,
+      created_at TIMESTAMP DEFAULT NOW()
     );
 
-    -- ใส่ข้อมูลทดสอบ
     INSERT INTO matches (id, home_team, away_team, kickoff_time) VALUES (1, 'Man City', 'Liverpool', NOW());
     INSERT INTO odds (match_id, hdp_home, hdp_away, over_under, odds_home, odds_away, odds_over, odds_under)
     VALUES (1, -0.5, 0.5, 2.5, 0.95, 0.95, 0.90, 1.00);
