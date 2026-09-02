@@ -2965,11 +2965,43 @@ function switchTab(tabName, btnElement) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  function deleteMatch(mId) {
+  async function deleteMatch(mId) {
+    if (apiToken) {
+      try {
+        await apiRequest(`/matches/${mId}`, { method: 'DELETE' });
+      } catch (error) {
+        return showCustomAlert('⚠️ ลบคู่บอลไม่สำเร็จ', error.message);
+      }
+    }
     matches = matches.filter(m => String(m.id) !== String(mId));
     selectedMatchIds = selectedMatchIds.filter(id => String(id) !== String(mId));
     saveData();
     renderMatchSelectionList(); renderSelectedBetForms(); renderAdminMatchesBuilder();
+  }
+
+  async function clearSettledMatches() {
+    const settledIds = matches.filter(m => m.isSettled).map(m => m.id);
+    if (!settledIds.length) {
+      return showCustomAlert('ℹ️ ไม่มีรายการ', 'ยังไม่มีคู่บอลที่สรุปผลแล้วให้ล้าง');
+    }
+    const archiveErrors = [];
+    if (apiToken) {
+      for (const matchId of settledIds) {
+        try {
+          await apiRequest(`/matches/${matchId}`, { method: 'DELETE' });
+        } catch (error) {
+          archiveErrors.push(error.message);
+        }
+      }
+    }
+    if (archiveErrors.length) {
+      return showCustomAlert('⚠️ ล้างรายการไม่ครบ', archiveErrors[0]);
+    }
+    matches = matches.filter(m => !m.isSettled);
+    selectedMatchIds = selectedMatchIds.filter(id => matches.some(m => String(m.id) === String(id)));
+    saveData();
+    renderMatchSelectionList(); renderSelectedBetForms(); renderAdminMatchesBuilder();
+    showCustomAlert('✅ ล้างรายการสำเร็จ', `นำคู่บอลที่สรุปผลแล้วออก ${settledIds.length} คู่ โดยประวัติการเดิมพันยังคงอยู่`);
   }
 
   // ===== ระบบออกผลสกอร์ / สรุปเดิมพัน =====
@@ -3311,7 +3343,10 @@ function renderAdminMatchesBuilder() {
       <details style="margin-top:14px;border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,.015);" ${settledMatches.length ? '' : 'open'}>
         <summary style="cursor:pointer;padding:12px 14px;font-weight:900;color:var(--green);list-style:none;display:flex;align-items:center;justify-content:space-between;">
           <span>🏁 คู่บอลที่สรุปผลแล้ว <span style="font-size:11px;color:var(--sub);">(${settledMatches.length} คู่)</span></span>
-          <span style="font-size:11px;color:var(--sub);">${settledMatches.length ? 'กดเพื่อดูรายการ' : 'ยังไม่มีรายการ'}</span>
+          <span style="display:flex;align-items:center;gap:8px;">
+            ${settledMatches.length ? '<button class="btn-sm btn-danger" onclick="event.preventDefault();clearSettledMatches()">🗑️ ล้างรายการที่สรุปแล้ว</button>' : ''}
+            <span style="font-size:11px;color:var(--sub);">${settledMatches.length ? 'กดเพื่อดูรายการ' : 'ยังไม่มีรายการ'}</span>
+          </span>
         </summary>
         <div style="padding:0 10px 10px;">
           ${settledMatches.length ? settledMatches.map(m => renderMatchCard(m,true)).join('') : '<div style="text-align:center;color:var(--sub);padding:15px;">ยังไม่มีคู่ที่สรุปผลแล้ว</div>'}

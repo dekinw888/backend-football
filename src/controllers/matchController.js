@@ -8,10 +8,29 @@ exports.getAllMatches = async (req, res) => {
              o.id AS odds_id, o.hdp_home, o.hdp_away, o.over_under, o.odds_home, o.odds_away, o.odds_over, o.odds_under
       FROM matches m
       LEFT JOIN odds o ON m.id = o.match_id
+      WHERE m.status <> 'ARCHIVED'
       ORDER BY m.kickoff_time ASC;
     `;
     const result = await db.query(query);
     res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// [ADMIN] ซ่อนคู่บอลจากรายการ โดยเก็บข้อมูลผลและประวัติการเดิมพันไว้
+exports.archiveMatch = async (req, res) => {
+  try {
+    const result = await db.query(
+      `UPDATE matches SET status = 'ARCHIVED'
+       WHERE id = $1 AND status IN ('OPEN', 'FINISHED')
+       RETURNING id`,
+      [req.params.matchId]
+    );
+    if (!result.rows.length) {
+      return res.status(404).json({ message: 'Match not found or already archived' });
+    }
+    res.json({ message: 'Match removed from active list', matchId: result.rows[0].id });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -10,5 +10,6 @@ router.get('/', matchController.getAllMatches);
 router.post('/', verifyToken, checkAdmin, matchController.createMatch);
 router.put('/:matchId', verifyToken, checkAdmin, matchController.updateMatch);
 router.put('/:matchId/odds', verifyToken, checkAdmin, matchController.updateOdds);
+router.delete('/:matchId', verifyToken, checkAdmin, matchController.archiveMatch);
 
 module.exports = router;
