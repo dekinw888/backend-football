@@ -1,10 +1,9 @@
 services:
   - type: web
     name: backend-football
-    env: node
+    runtime: docker
     plan: free
-    buildCommand: npm ci
-    startCommand: npm start
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: NODE_ENV
         value: production

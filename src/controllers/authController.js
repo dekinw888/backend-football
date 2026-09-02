@@ -15,8 +15,8 @@ exports.register = async (req, res) => {
     const userRole = role === 'ADMIN' ? 'ADMIN' : 'USER';
 
     const newUser = await db.query(
-      'INSERT INTO users (username, password_hash, role) VALUES ($1, $2, $3) RETURNING id, username, role, balance',
-      [username, hashedPassword, userRole]
+      'INSERT INTO users (username, password_hash, role, status) VALUES ($1, $2, $3, $4) RETURNING id, username, role, status, balance',
+      [username, hashedPassword, userRole, userRole === 'ADMIN' ? 'APPROVED' : 'PENDING']
     );
 
     res.status(201).json({ message: 'User registered successfully', user: newUser.rows[0] });
@@ -32,6 +32,7 @@ exports.login = async (req, res) => {
     if (result.rows.length === 0) return res.status(400).json({ message: 'User not found' });
 
     const user = result.rows[0];
+    if (user.status !== 'APPROVED') return res.status(403).json({ message: 'Account is not approved' });
     const validPassword = await bcrypt.compare(password, user.password_hash);
     if (!validPassword) return res.status(400).json({ message: 'Invalid password' });
 
@@ -43,7 +44,7 @@ exports.login = async (req, res) => {
 
     res.json({
       token,
-      user: { id: user.id, username: user.username, role: user.role, balance: user.balance }
+      user: { id: user.id, username: user.username, role: user.role, status: user.status, balance: user.balance }
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

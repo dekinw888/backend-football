@@ -5,6 +5,9 @@ const { verifyToken } = require('../middlewares/authMiddleware');
 
 // ต้อง Login ก่อนถึงจะแทงบอลและดูประวัติได้
 router.post('/', verifyToken, betController.placeBet);
+router.post('/batch', verifyToken, betController.placeBetsBatch);
+router.post('/ticket', verifyToken, betController.placeTicket);
+router.delete('/:betId', verifyToken, betController.cancelBet);
 router.get('/my-bets', verifyToken, betController.getMyBets);
 
 module.exports = router;

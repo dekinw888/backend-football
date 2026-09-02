@@ -20,6 +20,13 @@ exports.getAllMatches = async (req, res) => {
 // [ADMIN] เพิ่มคู่บอลใหม่
 exports.createMatch = async (req, res) => {
   const { home_team, away_team, kickoff_time, hdp_home, hdp_away, over_under, odds_home, odds_away, odds_over, odds_under } = req.body;
+  if (!home_team || !away_team || !kickoff_time) {
+    return res.status(400).json({ message: 'home_team, away_team, and kickoff_time are required' });
+  }
+  const kickoffDate = new Date(kickoff_time);
+  if (Number.isNaN(kickoffDate.getTime()) || kickoffDate.getTime() <= Date.now()) {
+    return res.status(400).json({ message: 'kickoff_time must be a future date' });
+  }
   
   try {
     // 1. สร้างคู่แข่งขัน
@@ -52,6 +59,14 @@ exports.updateOdds = async (req, res) => {
   const { hdp_home, hdp_away, over_under, odds_home, odds_away, odds_over, odds_under } = req.body;
 
   try {
+    const matchCheck = await db.query(
+      "SELECT id FROM matches WHERE id = $1 AND status = 'OPEN'",
+      [matchId]
+    );
+    if (matchCheck.rows.length === 0) {
+      return res.status(400).json({ message: 'Odds can only be changed for an open match' });
+    }
+
     const result = await db.query(
       `UPDATE odds 
        SET hdp_home = $1, hdp_away = $2, over_under = $3, odds_home = $4, odds_away = $5, odds_over = $6, odds_under = $7, updated_at = NOW()
@@ -59,8 +74,65 @@ exports.updateOdds = async (req, res) => {
       [hdp_home, hdp_away, over_under, odds_home, odds_away, odds_over, odds_under, matchId]
     );
 
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'Odds not found for this match' });
+    }
     res.json({ message: 'Odds updated successfully', odds: result.rows[0] });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+};
+
+exports.updateMatch = async (req, res) => {
+  const { matchId } = req.params;
+  const {
+    home_team,
+    away_team,
+    kickoff_time,
+    hdp_home,
+    hdp_away,
+    over_under,
+    odds_home,
+    odds_away,
+    odds_over,
+    odds_under,
+  } = req.body;
+
+  if (!home_team || !away_team || !kickoff_time) {
+    return res.status(400).json({ message: 'home_team, away_team, and kickoff_time are required' });
+  }
+
+  const kickoffDate = new Date(kickoff_time);
+  if (Number.isNaN(kickoffDate.getTime()) || kickoffDate.getTime() <= Date.now()) {
+    return res.status(400).json({ message: 'kickoff_time must be a future date' });
+  }
+
+  const client = await db.pool.connect();
+  try {
+    await client.query('BEGIN');
+    const matchResult = await client.query(
+      `UPDATE matches SET home_team = $1, away_team = $2, kickoff_time = $3
+       WHERE id = $4 AND status = 'OPEN' RETURNING *`,
+      [home_team, away_team, kickoff_time, matchId]
+    );
+    if (matchResult.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ message: 'Match not found or is no longer open' });
+    }
+
+    const oddsResult = await client.query(
+      `UPDATE odds
+       SET hdp_home = $1, hdp_away = $2, over_under = $3, odds_home = $4,
+           odds_away = $5, odds_over = $6, odds_under = $7, updated_at = NOW()
+       WHERE match_id = $8 RETURNING *`,
+      [hdp_home, hdp_away, over_under, odds_home, odds_away, odds_over, odds_under, matchId]
+    );
+    await client.query('COMMIT');
+    res.json({ message: 'Match updated successfully', match: matchResult.rows[0], odds: oddsResult.rows[0] });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    res.status(500).json({ error: error.message });
+  } finally {
+    client.release();
   }
 };

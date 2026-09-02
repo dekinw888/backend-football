@@ -1,14 +1,16 @@
-# Use official Node image
-FROM node:18-alpine
+# Use an image that includes the OS dependencies Playwright needs for browser automation.
+FROM node:18-bullseye-slim
 
-# Create app directory
 WORKDIR /usr/src/app
 
-# Install app dependencies
+# Install app dependencies.
 COPY package*.json ./
 RUN npm ci --only=production
 
-# Bundle app source
+# Install Chromium for the goal7.co result scraper.
+RUN npx playwright install --with-deps chromium
+
+# Bundle app source.
 COPY . .
 
 ENV NODE_ENV=production
