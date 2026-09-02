@@ -826,10 +826,10 @@ input.input-field:focus,select.input-field:focus{border-color:var(--gold);box-sh
       <button class="nav-btn" onclick="switchTab('history', this)">📋 ประวัติการเล่น</button>
       <button class="nav-btn" onclick="switchTab('wallet', this)">💰 ฝาก/ถอน FDL</button>
       <button class="nav-btn" onclick="switchTab('leaderboard', this)">🏆 จัดอันดับ</button>
+      <button class="nav-btn" onclick="switchTab('promotions', this)">🎁 โปรโมชั่น</button>
       <div class="nav-section">🎮 RB ใจดีอยากแจก</div>
       <button class="nav-btn" onclick="switchTab('rb-club', this)">🎡 Lucky Wheel</button>
       <button class="nav-btn" onclick="switchTab('rb-club', this)">🎁 Daily Check-in</button>
-      <button class="nav-btn" onclick="switchTab('promotions', this)">🎁 โปรโมชั่น</button>
 
       <div class="nav-section admin-only-nav">🔐 ระบบหลังบ้าน ADMIN</div>
       <button class="nav-btn admin-only-nav" onclick="switchTab('manage', this)">⚙️ จัดการราคา/สรุปผล <span id="sidebar-badge-manage" class="sidebar-alert-badge">0</span></button>
@@ -1522,23 +1522,52 @@ input.input-field:focus,select.input-field:focus{border-color:var(--gold);box-sh
   async function loadBetHistoryFromApi() {
     if (!apiToken) return;
     const rows = await apiRequest('/bets/my-bets');
-    betsHistory = rows.map((row) => ({
-      id: row.id,
-      userPhone: currentUser.phone,
-      userName: currentUser.fullname,
-      matchId: row.match_id,
-      matchTitle: `${row.home_team} vs ${row.away_team}`,
-      amount: Number(row.stake || 0),
-      oddsRate: Number(row.odds_rate || 0),
-      type: row.bet_selection === 'OVER' ? 'over'
-        : row.bet_selection === 'UNDER' ? 'under'
-        : row.bet_selection === 'HOME' ? 'tor' : 'rong',
-      status: row.status === 'PENDING' ? 'pending'
-        : row.status === 'WIN' ? 'win' : 'lose',
-      payout: Number(row.payout || 0),
-      placedAt: row.created_at ? new Date(row.created_at).toLocaleString('th-TH') : '-',
-      date: row.created_at ? new Date(row.created_at).toLocaleDateString('th-TH') : '-'
-    }));
+    const mapBetStatus = (status) => status === 'PENDING' ? 'pending'
+      : status === 'WIN' ? 'win' : status === 'LOSS' ? 'lose' : String(status || '').toLowerCase();
+    const mapBetType = (selection) => selection === 'OVER' ? 'over'
+      : selection === 'UNDER' ? 'under' : selection === 'HOME' ? 'tor' : 'rong';
+    betsHistory = rows.map((row) => {
+      const placedAt = row.created_at ? new Date(row.created_at).toLocaleString('th-TH') : '-';
+      if (row.is_ticket) {
+        return {
+          id: row.id,
+          userPhone: currentUser.phone,
+          userName: currentUser.fullname,
+          isParlay: true,
+          stepCount: Array.isArray(row.items) ? row.items.length : 0,
+          stepItems: (row.items || []).map((item) => ({
+            matchId: item.match_id,
+            matchTitle: `${item.home_team || '-'} vs ${item.away_team || '-'}`,
+            type: mapBetType(item.bet_selection),
+            homeScore: item.home_score,
+            awayScore: item.away_score
+          })),
+          amount: Number(row.stake || 0),
+          multiplier: Number(row.multiplier || 0),
+          status: mapBetStatus(row.status),
+          payout: Number(row.payout || 0),
+          placedAt,
+          date: row.created_at ? new Date(row.created_at).toLocaleDateString('th-TH') : '-'
+        };
+      }
+      return {
+        id: row.id,
+        userPhone: currentUser.phone,
+        userName: currentUser.fullname,
+        matchId: row.match_id,
+        matchTitle: `${row.home_team || '-'} vs ${row.away_team || '-'}`,
+        homeScore: row.home_score,
+        awayScore: row.away_score,
+        isSettled: row.match_status === 'FINISHED',
+        amount: Number(row.stake || 0),
+        oddsRate: Number(row.odds_rate || 0),
+        type: mapBetType(row.bet_selection),
+        status: mapBetStatus(row.status),
+        payout: Number(row.payout || 0),
+        placedAt,
+        date: row.created_at ? new Date(row.created_at).toLocaleDateString('th-TH') : '-'
+      };
+    });
     renderUserBetsHistory();
   }
 
@@ -3394,8 +3423,10 @@ function renderUserBetsHistory() {
       if (b.isParlay) {
         titleTxt = (b.stepItems || []).map(i => {
           const m = matches.find(x => String(x.id) === String(i.matchId));
-          const score = m && m.isSettled
-            ? `<span style="color:var(--gold);font-weight:800;"> ${m.homeScore}-${m.awayScore}</span>`
+          const score = (i.homeScore !== null && i.homeScore !== undefined && i.awayScore !== null && i.awayScore !== undefined)
+            ? `<span style="color:var(--gold);font-weight:800;"> ${i.homeScore}-${i.awayScore}</span>`
+            : m && m.isSettled
+              ? `<span style="color:var(--gold);font-weight:800;"> ${m.homeScore}-${m.awayScore}</span>`
             : '';
           const stepTypeLabel = ({tor:'ต่อ', rong:'รอง', over:'สูง', under:'ต่ำ'})[i.type] || '';
           const stepTypeClass = ({tor:'text-tor', rong:'text-rong', over:'text-over', under:'text-under'})[i.type] || '';
@@ -3406,8 +3437,10 @@ function renderUserBetsHistory() {
         }).join('<br>');
       } else {
         const m = matches.find(x => String(x.id) === String(b.matchId));
-        const score = m && m.isSettled
-          ? `<div style="margin-top:5px;color:var(--gold);font-weight:800;">ผลสกอร์ ${m.homeScore} - ${m.awayScore}</div>`
+        const score = (b.homeScore !== null && b.homeScore !== undefined && b.awayScore !== null && b.awayScore !== undefined)
+          ? `<div style="margin-top:5px;color:var(--gold);font-weight:800;">ผลสกอร์ ${b.homeScore} - ${b.awayScore}</div>`
+          : m && m.isSettled
+            ? `<div style="margin-top:5px;color:var(--gold);font-weight:800;">ผลสกอร์ ${m.homeScore} - ${m.awayScore}</div>`
           : '';
         titleTxt = `${b.matchTitle || '-'}${score}`;
       }
