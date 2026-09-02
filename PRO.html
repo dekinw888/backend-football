@@ -1373,6 +1373,8 @@
   let walletHistory = [];
   const API_BASE = '/api';
   let apiToken = sessionStorage.getItem('fdl_api_token') || '';
+  let apiRefreshTimer = null;
+  let apiRefreshInFlight = false;
 
   async function apiRequest(path, options = {}) {
     const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
@@ -1476,6 +1478,29 @@
     }));
     renderAdminUserTable();
     updateDashboardData();
+  }
+
+  async function refreshApiData() {
+    if (!apiToken || !currentUser || apiRefreshInFlight) return;
+    apiRefreshInFlight = true;
+    try {
+      const me = await apiRequest('/auth/me');
+      applyApiUser(me.user);
+      await loadMatchesFromApi();
+      await loadBetHistoryFromApi();
+      await loadWalletHistoryFromApi();
+      await loadAdminUsersFromApi();
+      updateCreditDisplay();
+    } finally {
+      apiRefreshInFlight = false;
+    }
+  }
+
+  function startApiRefresh() {
+    if (apiRefreshTimer) clearInterval(apiRefreshTimer);
+    apiRefreshTimer = setInterval(() => {
+      refreshApiData().catch(error => console.error('API refresh failed:', error));
+    }, 5000);
   }
 
   let depositChartInst = null;
@@ -1585,6 +1610,7 @@
       renderAdminMatchesBuilder();
       renderAdminUserTable();
       initWalletNotificationWatcher();
+      startApiRefresh();
     } catch (e) {
       console.error('Error restoring login session:', e);
     }
@@ -1721,9 +1747,15 @@
 
     updateCreditDisplay(); renderMatchSelectionList(); renderAdminMatchesBuilder(); renderAdminUserTable();
     initWalletNotificationWatcher();
+    startApiRefresh();
   }
 
-  function logout() { sessionStorage.removeItem('fdl_logged_in_phone'); sessionStorage.removeItem('fdl_api_token'); location.reload(); }
+  function logout() {
+    if (apiRefreshTimer) clearInterval(apiRefreshTimer);
+    sessionStorage.removeItem('fdl_logged_in_phone');
+    sessionStorage.removeItem('fdl_api_token');
+    location.reload();
+  }
   
   function updateCreditDisplay() { 
     if(currentUser) {
@@ -3598,7 +3630,19 @@ function renderUserBetsHistory() {
     openActionConfirm(
       '➕ ยืนยันเติมเครดิต',
       `เติม <b style="color:var(--green);">${amount.toLocaleString()} FDL</b> ให้ <b>${u.fullname}</b><br>เครดิตปัจจุบัน: ${Number(u.credit || 0).toLocaleString()} FDL`,
-      () => {
+      async () => {
+        if (apiToken && u.id) {
+          try {
+            await apiRequest(`/admin/users/${u.id}`, {
+              method: 'PATCH',
+              body: JSON.stringify({ balance: Number(u.credit || 0) + amount })
+            });
+            await loadAdminUsersFromApi();
+            return showCustomAlert('✅ เติมเครดิตสำเร็จ', `${u.fullname} ได้รับเครดิตเพิ่ม ${amount.toLocaleString()} FDL`);
+          } catch (error) {
+            return showCustomAlert('⚠️ เติมเครดิตไม่สำเร็จ', error.message);
+          }
+        }
         u.credit = Number(u.credit || 0) + amount;
         saveData();
         renderAdminUserTable();
@@ -3640,7 +3684,19 @@ function renderUserBetsHistory() {
     openActionConfirm(
       '➖ ยืนยันลบเครดิต',
       `ลบ <b style="color:var(--red);">${amount.toLocaleString()} FDL</b> จาก <b>${u.fullname}</b><br>เครดิตปัจจุบัน: ${currentCredit.toLocaleString()} FDL`,
-      () => {
+      async () => {
+        if (apiToken && u.id) {
+          try {
+            await apiRequest(`/admin/users/${u.id}`, {
+              method: 'PATCH',
+              body: JSON.stringify({ balance: currentCredit - amount })
+            });
+            await loadAdminUsersFromApi();
+            return showCustomAlert('✅ ลบเครดิตสำเร็จ', `ลบเครดิต ${amount.toLocaleString()} FDL จาก ${u.fullname} แล้ว`);
+          } catch (error) {
+            return showCustomAlert('⚠️ ลบเครดิตไม่สำเร็จ', error.message);
+          }
+        }
         u.credit = currentCredit - amount;
         saveData();
         renderAdminUserTable();
@@ -3704,7 +3760,17 @@ function renderUserBetsHistory() {
     openActionConfirm(
       '🗑️ ยืนยันลบบัญชี',
       `ต้องการลบบัญชีของ <b>${u.fullname}</b> (${u.phone}) ใช่หรือไม่?<br>เครดิตคงเหลือ ${Number(u.credit || 0).toLocaleString()} FDL จะถูกลบไปพร้อมบัญชี<br><br><b style="color:var(--red);">การลบบัญชีนี้ไม่สามารถย้อนกลับได้</b>`,
-      () => {
+      async () => {
+        if (apiToken && u.id) {
+          try {
+            await apiRequest(`/admin/users/${u.id}`, { method: 'DELETE' });
+            await loadAdminUsersFromApi();
+            showCustomAlert('🗑️ ลบบัญชีสำเร็จ', `ลบบัญชีของ ${u.fullname} เรียบร้อยแล้ว`);
+            return;
+          } catch (error) {
+            return showCustomAlert('⚠️ ลบบัญชีไม่สำเร็จ', error.message);
+          }
+        }
         const idx = userDatabase.findIndex(user => user.phone === phone);
         if (idx > -1) userDatabase.splice(idx, 1);
         saveData();

@@ -50,3 +50,16 @@ exports.login = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+exports.me = async (req, res) => {
+  try {
+    const result = await db.query(
+      'SELECT id, username, role, status, balance FROM users WHERE id = $1',
+      [req.user.id]
+    );
+    if (!result.rows.length) return res.status(404).json({ message: 'User not found' });
+    res.json({ user: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};

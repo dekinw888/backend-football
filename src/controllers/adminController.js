@@ -32,3 +32,19 @@ exports.updateUser = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.deleteUser = async (req, res) => {
+  if (String(req.params.userId) === String(req.user.id)) {
+    return res.status(400).json({ message: 'You cannot delete the active admin account' });
+  }
+  try {
+    const result = await db.query(
+      'DELETE FROM users WHERE id = $1 AND role <> $2 RETURNING id, username',
+      [req.params.userId, 'ADMIN']
+    );
+    if (!result.rows.length) return res.status(404).json({ message: 'User not found or cannot be deleted' });
+    res.json({ message: 'User deleted successfully', user: result.rows[0] });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
