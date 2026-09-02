@@ -1380,6 +1380,7 @@
   let apiToken = sessionStorage.getItem('fdl_api_token') || '';
   let apiRefreshTimer = null;
   let apiRefreshInFlight = false;
+  let activeTabName = '';
 
   async function apiRequest(path, options = {}) {
     const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
@@ -1423,8 +1424,10 @@
       awayScore: row.away_score
     }));
     saveData();
-    renderMatchSelectionList();
-    renderAdminMatchesBuilder();
+    if (activeTabName !== 'manage') {
+      renderMatchSelectionList();
+      renderAdminMatchesBuilder();
+    }
   }
 
   async function loadBetHistoryFromApi() {
@@ -1808,6 +1811,7 @@ function updateSidebarNotificationBadges(){
 }
 
 function switchTab(tabName, btnElement) {
+  activeTabName = tabName;
     document.querySelectorAll('.tab-content, aside .nav-btn, aside .nav-item').forEach(el => el.classList.remove('active'));
     
     const targetContent = document.getElementById(`tab-${tabName}`);
@@ -1824,7 +1828,10 @@ function switchTab(tabName, btnElement) {
 
     if (tabName === 'wallet-admin') markAdminSectionSeen('wallet');
     if (tabName === 'users-admin') markAdminSectionSeen('users');
-    if (tabName === 'manage') markAdminSectionSeen('manage');
+    if (tabName === 'manage') {
+      markAdminSectionSeen('manage');
+      renderAdminMatchesBuilder();
+    }
     updateSidebarNotificationBadges();
 
     if (tabName === 'dashboard') { updateDashboardData(); }
