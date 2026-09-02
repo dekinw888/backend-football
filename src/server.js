@@ -10,6 +10,7 @@ const betRoutes = require('./routes/betRoutes');
 const settleRoutes = require('./routes/settleRoutes');
 const walletRoutes = require('./routes/walletRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const activityRoutes = require('./routes/activityRoutes');
 const { autoSettleGoal7Results } = require('./controllers/settleController');
 
 const app = express();
@@ -48,6 +49,7 @@ app.use('/api/bets', betRoutes);
 app.use('/api/settle', settleRoutes);
 app.use('/api/wallet', walletRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/activity', activityRoutes);
 
 const PORT = process.env.PORT || 5000;
 

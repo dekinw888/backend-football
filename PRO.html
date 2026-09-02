@@ -1319,6 +1319,7 @@
         <div class="card">
           <div class="card-head">
             <h3>👥 ระบบหลังบ้าน ADMIN - จัดการสมาชิก</h3>
+            <div style="font-size:12px;color:var(--sub);">เข้าชมทั้งหมด <b id="admin-visit-count" style="color:var(--gold);">0</b> ครั้ง · ออนไลน์ <b id="admin-online-count" style="color:var(--green);">0</b> คน</div>
           </div>
           <table>
             <thead>
@@ -1328,6 +1329,7 @@
                 <th>สิทธิ์</th>
                 <th>สถานะ</th>
                 <th>เครดิต FDL</th>
+                <th>เข้าใช้งาน</th>
                 <th style="text-align: right;">การจัดการ</th>
               </tr>
             </thead>
@@ -1386,6 +1388,9 @@
   let apiRefreshTimer = null;
   let apiRefreshInFlight = false;
   let activeTabName = '';
+  let activityHeartbeatTimer = null;
+  let activePresenceByUserId = {};
+  let siteVisitCount = 0;
 
   async function apiRequest(path, options = {}) {
     const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
@@ -1493,6 +1498,47 @@
     updateDashboardData();
   }
 
+  async function recordSiteVisit() {
+    try {
+      const result = await apiRequest('/activity/visit', { method: 'POST' });
+      siteVisitCount = Number(result.visitCount || 0);
+      const visitEl = document.getElementById('admin-visit-count');
+      if (visitEl) visitEl.textContent = siteVisitCount.toLocaleString();
+    } catch (error) {
+      console.error('Site visit tracking failed:', error);
+    }
+  }
+
+  async function sendActivityHeartbeat() {
+    if (!apiToken) return;
+    try {
+      await apiRequest('/activity/heartbeat', { method: 'POST' });
+    } catch (error) {
+      console.error('Activity heartbeat failed:', error);
+    }
+  }
+
+  async function loadAdminActivity() {
+    if (!apiToken || !currentUser || currentUser.role !== 'admin') return;
+    const result = await apiRequest('/activity/admin');
+    siteVisitCount = Number(result.visitCount || 0);
+    activePresenceByUserId = {};
+    (result.presence || []).forEach(item => {
+      activePresenceByUserId[String(item.userId)] = item;
+    });
+    const visitEl = document.getElementById('admin-visit-count');
+    if (visitEl) visitEl.textContent = siteVisitCount.toLocaleString();
+    const onlineEl = document.getElementById('admin-online-count');
+    if (onlineEl) onlineEl.textContent = Object.values(activePresenceByUserId).filter(item => item.online).length;
+    renderAdminUserTable();
+  }
+
+  function startActivityTracking() {
+    if (activityHeartbeatTimer) clearInterval(activityHeartbeatTimer);
+    sendActivityHeartbeat();
+    activityHeartbeatTimer = setInterval(sendActivityHeartbeat, 30000);
+  }
+
   async function refreshApiData() {
     if (!apiToken || !currentUser || apiRefreshInFlight) return;
     apiRefreshInFlight = true;
@@ -1503,6 +1549,7 @@
       await loadBetHistoryFromApi();
       await loadWalletHistoryFromApi();
       await loadAdminUsersFromApi();
+      await loadAdminActivity();
       updateCreditDisplay();
     } finally {
       apiRefreshInFlight = false;
@@ -1624,6 +1671,7 @@
       renderAdminUserTable();
       initWalletNotificationWatcher();
       startApiRefresh();
+      startActivityTracking();
     } catch (e) {
       console.error('Error restoring login session:', e);
     }
@@ -1632,6 +1680,7 @@
   window.onload = function() { 
     loadData();
     updateTotalBetVolumeDisplay(); 
+    recordSiteVisit();
     setupEnterKeyListeners(); 
     updateSidebarNotificationBadges();
     document.getElementById('sort-btn-league').classList.toggle('active', matchSortMode === 'league');
@@ -1735,6 +1784,7 @@
       await loadBetHistoryFromApi();
       await loadWalletHistoryFromApi();
       await loadAdminUsersFromApi();
+      await loadAdminActivity();
     } catch (error) {
       return showCustomAlert('⚠️ เข้าสู่ระบบไม่สำเร็จ', error.message);
     }
@@ -1761,10 +1811,12 @@
     updateCreditDisplay(); renderMatchSelectionList(); renderAdminMatchesBuilder(); renderAdminUserTable();
     initWalletNotificationWatcher();
     startApiRefresh();
+    startActivityTracking();
   }
 
   function logout() {
     if (apiRefreshTimer) clearInterval(apiRefreshTimer);
+    if (activityHeartbeatTimer) clearInterval(activityHeartbeatTimer);
     sessionStorage.removeItem('fdl_logged_in_phone');
     sessionStorage.removeItem('fdl_api_token');
     location.reload();
@@ -3541,6 +3593,10 @@ function renderUserBetsHistory() {
       const statusHtml = u.role === 'admin'
         ? '<span style="color:var(--green);font-weight:bold;">🟢 ใช้งานได้</span>'
         : (isPending ? '<span style="color:var(--gold);font-weight:bold;">⏳ รออนุมัติ</span>' : '<span style="color:var(--green);font-weight:bold;">🟢 อนุมัติแล้ว</span>');
+      const presence = activePresenceByUserId[String(u.id)];
+      const activityHtml = presence?.online
+        ? '<span style="color:var(--green);font-weight:bold;">🟢 ออนไลน์</span>'
+        : `<span style="color:var(--sub);font-size:11px;">⚪ ${presence?.lastSeen ? `ล่าสุด ${new Date(presence.lastSeen).toLocaleString('th-TH')}` : 'ยังไม่เข้าใช้งาน'}</span>`;
       const actionButtons = isSelfAdmin
         ? `<span style="color:var(--sub); font-size:12px;">บัญชี ADMIN ที่กำลังใช้งาน</span>`
         : `
@@ -3565,6 +3621,7 @@ function renderUserBetsHistory() {
           <td>${u.role === 'admin' ? '<span class="role-badge">🛡️ ADMIN</span>' : '<span class="user-role-badge">👤 USER</span>'}</td>
           <td>${statusHtml}</td>
           <td style="color:var(--gold); font-weight:bold;">${Number(u.credit || 0).toLocaleString()}</td>
+          <td>${activityHtml}</td>
           <td style="text-align: right;">${actionButtons}</td>
         </tr>
       `;
