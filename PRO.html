@@ -3457,27 +3457,15 @@ function renderUserBetsHistory() {
       let titleTxt = '';
       if (b.isParlay) {
         titleTxt = (b.stepItems || []).map(i => {
-          const m = matches.find(x => String(x.id) === String(i.matchId));
-          const score = (i.homeScore !== null && i.homeScore !== undefined && i.awayScore !== null && i.awayScore !== undefined)
-            ? `<span style="color:var(--gold);font-weight:800;"> ${i.homeScore}-${i.awayScore}</span>`
-            : m && m.isSettled
-              ? `<span style="color:var(--gold);font-weight:800;"> ${m.homeScore}-${m.awayScore}</span>`
-            : '';
           const stepTypeLabel = ({tor:'ต่อ', rong:'รอง', over:'สูง', under:'ต่ำ'})[i.type] || '';
           const stepTypeClass = ({tor:'text-tor', rong:'text-rong', over:'text-over', under:'text-under'})[i.type] || '';
           const stepTypeHtml = stepTypeLabel
             ? ` <span class="${stepTypeClass}" style="font-weight:900; margin-left:4px;">(${stepTypeLabel})</span>`
             : '';
-          return `${i.matchTitle}${stepTypeHtml}${score}`;
+          return `${i.matchTitle}${stepTypeHtml}`;
         }).join('<br>');
       } else {
-        const m = matches.find(x => String(x.id) === String(b.matchId));
-        const score = (b.homeScore !== null && b.homeScore !== undefined && b.awayScore !== null && b.awayScore !== undefined)
-          ? `<div style="margin-top:5px;color:var(--gold);font-weight:800;">ผลสกอร์ ${b.homeScore} - ${b.awayScore}</div>`
-          : m && m.isSettled
-            ? `<div style="margin-top:5px;color:var(--gold);font-weight:800;">ผลสกอร์ ${m.homeScore} - ${m.awayScore}</div>`
-          : '';
-        titleTxt = `${b.matchTitle || '-'}${score}`;
+        titleTxt = b.matchTitle || '-';
       }
 
       const oddsTxt = b.isParlay
@@ -3490,6 +3478,16 @@ function renderUserBetsHistory() {
       else if (b.status === 'draw') statusTxt = `<span style="color:var(--gold);font-weight:800;">${b.resultDetail || 'คืนทุน'}</span>`;
       else if (b.status === 'lose_half') statusTxt = `<span style="color:var(--red);font-weight:800;">${b.resultDetail || 'เสียครึ่ง'}</span>`;
       else if (b.status === 'lose') statusTxt = `<span style="color:var(--red);font-weight:800;">${b.resultDetail || 'เสียเต็ม'}</span>`;
+
+      const scoreItems = b.isParlay ? (b.stepItems || []) : [b];
+      const scoreLines = scoreItems.map((item) => {
+        const match = matches.find(x => String(x.id) === String(item.matchId));
+        const homeScore = item.homeScore !== null && item.homeScore !== undefined ? item.homeScore : match?.homeScore;
+        const awayScore = item.awayScore !== null && item.awayScore !== undefined ? item.awayScore : match?.awayScore;
+        if (homeScore === null || homeScore === undefined || awayScore === null || awayScore === undefined) return '';
+        return `<div style="font-size:11px;color:var(--gold);margin-top:3px;">ผลสกอร์ ${homeScore} - ${awayScore}</div>`;
+      }).filter(Boolean).join('');
+      statusTxt += scoreLines;
 
       if (b.payout !== undefined && b.status !== 'pending') {
         statusTxt += `<div style="font-size:11px;color:var(--sub);margin-top:4px;">รับคืน ${Number(b.payout || 0).toLocaleString()} FDL</div>`;
