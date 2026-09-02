@@ -92,6 +92,9 @@
   .rb-club-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px}
   .rb-reward-card{background:rgba(18,23,41,.9);border:1px solid var(--border);border-radius:14px;padding:18px}
   .rb-wheel{width:220px;height:220px;border-radius:50%;margin:16px auto;background:conic-gradient(#ef4b4b 0 36%,#9d1820 36% 56%,#f0b429 56% 68%,#ef4b4b 68% 88%,#38131c 88%);border:8px solid #f0b429;box-shadow:0 0 0 5px #40121a,0 0 30px rgba(239,75,75,.35);display:flex;align-items:center;justify-content:center;color:#fff;font-size:28px}
+  .rb-wheel.spinning{animation:rb-wheel-spin 3s cubic-bezier(.15,.75,.2,1) forwards}
+  @keyframes rb-wheel-spin{to{transform:rotate(1440deg)}}
+  .rb-reward-card button:disabled{background:#687080!important;border-color:#687080!important;color:#d8dce5!important;cursor:not-allowed;opacity:1}
   .rb-wheel-center{width:78px;height:78px;border-radius:50%;background:#111522;border:3px solid #f0b429;display:flex;align-items:center;justify-content:center;font-weight:900;text-align:center}
   .rb-checkin-days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:14px 0}
   .rb-checkin-day{padding:9px 3px;text-align:center;border:1px solid var(--border);border-radius:8px;color:var(--sub);font-size:11px}
@@ -1182,11 +1185,11 @@
           </div>
           <div class="rb-reward-card">
             <h3 style="color:var(--gold);">🎁 Daily Check-in</h3>
-            <p style="font-size:12px;color:var(--sub);margin-top:5px;">เข้าสู่ระบบต่อเนื่อง 7 วัน รับรวมวันสุดท้าย 15K</p>
+            <p style="font-size:12px;color:var(--sub);margin-top:5px;">ล็อกอินต่อเนื่องครบ 7 วัน แล้วรับ 15K ครั้งเดียว</p>
             <div id="rb-checkin-days" class="rb-checkin-days"></div>
             <div id="rb-checkin-status" style="font-size:12px;color:var(--sub);margin:12px 0;">กำลังโหลดสถานะ...</div>
             <button id="rb-checkin-btn" class="btn-action btn-success" style="width:100%;" onclick="claimDailyCheckin()">🎁 รับเครดิตวันนี้</button>
-            <div style="font-size:11px;color:var(--sub);margin-top:9px;">วันที่ 1–6 รับวันละ 2K · วันที่ 7 รับ 15K เท่านั้น</div>
+            <div style="font-size:11px;color:var(--sub);margin-top:9px;">นับวันใหม่เวลา 00:00 · ครบ 7 วันรับ 15K เท่านั้น</div>
           </div>
         </div>
       </div>
@@ -1562,19 +1565,30 @@
     }
     renderRewardDays(Number(status.streak || 0));
     const statusEl = document.getElementById('rb-checkin-status');
-    if (statusEl) statusEl.textContent = `ความต่อเนื่องปัจจุบัน ${Number(status.streak || 0)}/7 วัน`;
-    if (checkinButton) checkinButton.disabled = status.lastCheckinDate === new Date().toISOString().slice(0, 10);
+    const streak = Number(status.streak || 0);
+    if (statusEl) statusEl.textContent = status.checkinClaimed
+      ? 'รับรางวัลครบ 7 วันแล้ว เริ่มนับรอบใหม่วันนี้'
+      : `ล็อกอินต่อเนื่อง ${streak}/7 วัน${streak >= 7 ? ' · รับรางวัลได้แล้ว' : ''}`;
+    if (checkinButton) {
+      checkinButton.disabled = status.checkinClaimed || streak < 7;
+      checkinButton.textContent = status.checkinClaimed ? '✅ รับรางวัลรอบนี้แล้ว' : streak >= 7 ? '🎁 รับ 15,000 FDL' : `🔒 ต้องล็อกอินอีก ${7 - streak} วัน`;
+    }
   }
 
   async function claimLuckyWheel() {
     const button = document.getElementById('rb-wheel-btn');
+    const wheel = document.querySelector('.rb-wheel');
     if (button) button.disabled = true;
+    if (wheel) wheel.classList.add('spinning');
     try {
       const result = await apiRequest('/rewards/wheel', { method: 'POST' });
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      if (wheel) wheel.classList.remove('spinning');
       applyRewardBalance(result.balance);
       showCustomAlert('🎡 Lucky Wheel', `ยินดีด้วย คุณได้รับ <b style="color:var(--gold);">${Number(result.amount).toLocaleString()} FDL</b>`);
       await loadRewardStatus();
     } catch (error) {
+      if (wheel) wheel.classList.remove('spinning');
       if (button) button.disabled = false;
       showCustomAlert('⚠️ หมุนวงล้อไม่สำเร็จ', error.message);
     }

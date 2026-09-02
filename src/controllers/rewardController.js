@@ -20,24 +20,46 @@ function drawWheelReward() {
 
 exports.getStatus = async (req, res) => {
   try {
+    const today = `(NOW() AT TIME ZONE 'Asia/Bangkok')::date`;
     const [wheel, checkin] = await Promise.all([
       db.query(
         `SELECT EXISTS(
            SELECT 1 FROM user_reward_claims
-           WHERE user_id = $1 AND reward_type = 'LUCKY_WHEEL' AND reward_date = CURRENT_DATE
+           WHERE user_id = $1 AND reward_type = 'LUCKY_WHEEL' AND reward_date = ${today}
          ) AS claimed`,
         [req.user.id]
       ),
       db.query(
-        'SELECT streak, last_checkin_date FROM user_checkin_state WHERE user_id = $1',
+        `INSERT INTO user_checkin_state (user_id, streak, last_checkin_date)
+         VALUES ($1, 1, ${today})
+         ON CONFLICT (user_id) DO UPDATE SET
+           streak = CASE
+             WHEN user_checkin_state.last_checkin_date = ${today} THEN user_checkin_state.streak
+             WHEN user_checkin_state.last_checkin_date = ${today} - 1
+               THEN LEAST(user_checkin_state.streak + 1, 7)
+             ELSE 1
+           END,
+           last_checkin_date = CASE
+             WHEN user_checkin_state.last_checkin_date = ${today} THEN user_checkin_state.last_checkin_date
+             ELSE ${today}
+           END
+         RETURNING streak, last_checkin_date`,
         [req.user.id]
       )
     ]);
     const state = checkin.rows[0] || {};
+    const dailyClaim = await db.query(
+      `SELECT EXISTS(
+         SELECT 1 FROM user_reward_claims
+         WHERE user_id = $1 AND reward_type = 'DAILY_CHECKIN' AND reward_date = ${today}
+       ) AS claimed`,
+      [req.user.id]
+    );
     res.json({
       wheelClaimed: wheel.rows[0].claimed,
       streak: Number(state.streak || 0),
-      lastCheckinDate: state.last_checkin_date || null
+      lastCheckinDate: state.last_checkin_date || null,
+      checkinClaimed: dailyClaim.rows[0].claimed
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -51,7 +73,7 @@ exports.claimWheel = async (req, res) => {
     const amount = drawWheelReward();
     const claim = await client.query(
       `INSERT INTO user_reward_claims (user_id, reward_type, reward_date, amount)
-       VALUES ($1, 'LUCKY_WHEEL', CURRENT_DATE, $2)
+       VALUES ($1, 'LUCKY_WHEEL', (NOW() AT TIME ZONE 'Asia/Bangkok')::date, $2)
        ON CONFLICT (user_id, reward_type, reward_date) DO NOTHING
        RETURNING amount`,
       [req.user.id, amount]
@@ -78,38 +100,42 @@ exports.claimDailyCheckin = async (req, res) => {
   const client = await db.pool.connect();
   try {
     await client.query('BEGIN');
+    const today = `(NOW() AT TIME ZONE 'Asia/Bangkok')::date`;
     const existing = await client.query(
       'SELECT streak, last_checkin_date FROM user_checkin_state WHERE user_id = $1 FOR UPDATE',
       [req.user.id]
     );
     const state = existing.rows[0];
-    if (state && String(state.last_checkin_date).slice(0, 10) === new Date().toISOString().slice(0, 10)) {
-      await client.query('ROLLBACK');
-      return res.status(409).json({ message: 'Daily Check-in already claimed today' });
-    }
-    const yesterday = new Date();
-    yesterday.setUTCDate(yesterday.getUTCDate() - 1);
-    const isConsecutive = state && String(state.last_checkin_date).slice(0, 10) === yesterday.toISOString().slice(0, 10);
-    const streak = isConsecutive ? Number(state.streak) + 1 : 1;
-    const completed = streak >= 7;
-    const amount = completed ? 15000 : 2000;
-    await client.query(
-      `INSERT INTO user_checkin_state (user_id, streak, last_checkin_date)
-       VALUES ($1, $2, CURRENT_DATE)
-       ON CONFLICT (user_id) DO UPDATE SET streak = $2, last_checkin_date = CURRENT_DATE`,
-      [req.user.id, completed ? 0 : streak]
+    const claimed = await client.query(
+      `SELECT 1 FROM user_reward_claims
+       WHERE user_id = $1 AND reward_type = 'DAILY_CHECKIN' AND reward_date = ${today}`,
+      [req.user.id]
     );
+    if (claimed.rows.length) {
+      await client.query('ROLLBACK');
+      return res.status(409).json({ message: 'Daily Check-in reward already claimed' });
+    }
+    const streak = Number(state?.streak || 0);
+    if (streak < 7) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ message: `ล็อกอินต่อเนื่องแล้ว ${streak}/7 วัน ยังรับรางวัลไม่ได้` });
+    }
+    const amount = 15000;
     await client.query(
       `INSERT INTO user_reward_claims (user_id, reward_type, reward_date, amount)
-       VALUES ($1, 'DAILY_CHECKIN', CURRENT_DATE, $2)`,
+       VALUES ($1, 'DAILY_CHECKIN', ${today}, $2)`,
       [req.user.id, amount]
+    );
+    await client.query(
+      'UPDATE user_checkin_state SET streak = 0 WHERE user_id = $1',
+      [req.user.id]
     );
     const user = await client.query(
       'UPDATE users SET balance = balance + $1 WHERE id = $2 RETURNING balance',
       [amount, req.user.id]
     );
     await client.query('COMMIT');
-    res.json({ amount, balance: Number(user.rows[0].balance), streak: completed ? 0 : streak, completed });
+    res.json({ amount, balance: Number(user.rows[0].balance), streak: 0, completed: true });
   } catch (error) {
     await client.query('ROLLBACK');
     res.status(500).json({ error: error.message });
