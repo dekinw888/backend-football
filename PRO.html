@@ -246,6 +246,10 @@
   .match-compact-line .team-tor{color:var(--red)}.match-compact-line .team-rong{color:var(--blue)}
   .match-compact-line .compact-price{font-weight:900}.match-compact-line .compact-ou{color:var(--gold);font-weight:900}
   .match-compact-hint{font-size:10px;color:var(--sub);margin-top:2px}
+  .admin-match-title{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+  .admin-score-inline{display:inline-flex;align-items:center;gap:4px;margin-left:5px}
+  .admin-score-inline input{width:42px!important;margin:0!important;text-align:center;padding:4px!important;min-height:30px}
+  .admin-result-action{display:flex;align-items:center;gap:8px;margin-top:7px;padding-top:6px;border-top:1px dashed var(--border);font-size:11px;color:var(--sub)}
   @media(max-width:600px){.match-compact-line{font-size:13px;gap:5px}.match-compact-hint{font-size:9px}}
   @media(max-width:600px){.match-select-item{padding:5px 7px;margin-bottom:4px}.match-preview-odds{grid-template-columns:repeat(4,minmax(0,1fr));gap:3px}.match-preview-odd{padding:4px 2px;min-height:36px}.match-preview-odd .label{font-size:9px}.match-preview-odd .value{font-size:13px}.match-tap-hint{font-size:9px;margin-top:3px}}
   /* BET SLIP / PRICE BUTTONS v130 */
@@ -636,12 +640,12 @@
   #admin-matches-builder-list > div:not(#batch-result-toolbar) > div:first-child > div:last-child{width:100%;display:grid!important;grid-template-columns:1fr 1fr;gap:6px}
   #admin-matches-builder-list > div:not(#batch-result-toolbar) > div:first-child > div:last-child button{width:100%;min-height:40px}
   #admin-matches-builder-list > div:not(#batch-result-toolbar) > div:nth-child(2){display:block!important}
-  #admin-matches-builder-list input[id^="score-home-"],#admin-matches-builder-list input[id^="score-away-"]{width:62px!important;min-height:42px}
-  #admin-matches-builder-list .btn-sm.btn-success{min-height:42px}
+  #admin-matches-builder-list input[id^="score-home-"],#admin-matches-builder-list input[id^="score-away-"]{width:42px!important;min-height:30px}
+  #admin-matches-builder-list .admin-result-action .btn-sm.btn-success{min-height:34px}
 }
 @media(max-width:430px){
   #admin-matches-builder-list > div:not(#batch-result-toolbar) > div:first-child > div:last-child{grid-template-columns:1fr}
-  #admin-matches-builder-list input[id^="score-home-"],#admin-matches-builder-list input[id^="score-away-"]{width:72px!important}
+  #admin-matches-builder-list input[id^="score-home-"],#admin-matches-builder-list input[id^="score-away-"]{width:42px!important}
 }
 
 </style>
@@ -2995,13 +2999,18 @@ function renderAdminMatchesBuilder() {
       const homeClass = isHomeFav ? 'team-tor' : 'team-rong';
       const awayClass = isHomeFav ? 'team-rong' : 'team-tor';
       return `
-        <div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px;">
+        <div class="admin-match-card" style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:8px;">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
             <div style="min-width:240px;">
               <span class="league-badge">🏆 ${m.league || 'ทั่วไป'}</span>
               <span style="font-size:12px;color:var(--sub);">⏰ ${m.time} น.</span>
-              <div style="font-size:15px;font-weight:bold;margin-top:4px;">
+              <div class="admin-match-title" style="font-size:15px;font-weight:bold;margin-top:4px;">
                 <span class="${homeClass}"><span class="bet-label">${isHomeFav ? `ต่อ (${m.home})` : `รอง (${m.home})`}</span><span class="bet-price">${isHomeFav ? m.hdp : m.hdp.replace('-','+')}</span></span> vs <span class="${awayClass}"><span class="bet-label">${isHomeFav ? `รอง (${m.away})` : `ต่อ (${m.away})`}</span><span class="bet-price">${isHomeFav ? m.hdp.replace('-','+') : m.hdp}</span></span>
+                ${!settled ? `<span class="admin-score-inline" aria-label="กรอกผลสกอร์">
+                  <input type="number" min="0" step="1" id="score-home-${m.id}" class="input-field" placeholder="0" oninput="updateBatchScoreCount()">
+                  <strong>-</strong>
+                  <input type="number" min="0" step="1" id="score-away-${m.id}" class="input-field" placeholder="0" oninput="updateBatchScoreCount()">
+                </span>` : ''}
               </div>
               <div style="font-size:12px;color:var(--gold);margin-top:2px;">แฮนดิแคป: ${m.hdp} | สูงต่ำ: ${m.ou}</div>
               ${settled ? `<div style="margin-top:8px;display:inline-flex;padding:6px 10px;border-radius:7px;background:rgba(39,174,96,.12);border:1px solid rgba(39,174,96,.35);color:var(--green);font-weight:800;">✅ สรุปผลแล้ว: ${m.homeScore} - ${m.awayScore}</div>` : ''}
@@ -3011,17 +3020,7 @@ function renderAdminMatchesBuilder() {
               <button class="btn-sm btn-danger" onclick="deleteMatch('${m.id}')">🗑️ ลบ</button>
             </div>
           </div>
-          ${!settled ? `<div style="margin-top:12px;padding-top:10px;border-top:1px dashed var(--border);">
-            <div style="font-size:12px;color:var(--sub);margin-bottom:7px;">🏁 บันทึกผลสกอร์เพื่อสรุปเดิมพัน</div>
-            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-              <span style="font-size:11px;color:var(--sub);">${m.home}</span>
-              <input type="number" min="0" step="1" id="score-home-${m.id}" class="input-field" style="width:62px;margin:0;text-align:center;padding:6px;" placeholder="0" oninput="updateBatchScoreCount()">
-              <strong style="color:var(--gold);">-</strong>
-              <input type="number" min="0" step="1" id="score-away-${m.id}" class="input-field" style="width:62px;margin:0;text-align:center;padding:6px;" placeholder="0" oninput="updateBatchScoreCount()">
-              <span style="font-size:11px;color:var(--sub);">${m.away}</span>
-              <button class="btn-sm btn-success" style="padding:8px 14px;" onclick="processMatchResult('${m.id}')">✅ ออกผล / สรุปเดิมพัน</button>
-            </div>
-          </div>` : ''}
+          ${!settled ? `<div class="admin-result-action"><span>🏁 ผลสกอร์</span><button class="btn-sm btn-success" style="padding:7px 12px;" onclick="processMatchResult('${m.id}')">✅ ออกผล / สรุปเดิมพัน</button></div>` : ''}
         </div>`;
     };
 
@@ -3042,7 +3041,15 @@ function renderAdminMatchesBuilder() {
         </div>
       </details>`;
 
+    const scoreDrafts = {};
+    container.querySelectorAll('input[id^="score-home-"], input[id^="score-away-"]').forEach(input => {
+      scoreDrafts[input.id] = input.value;
+    });
     container.innerHTML = batchResultToolbar + pendingSection + settledSection;
+    Object.entries(scoreDrafts).forEach(([id, value]) => {
+      const input = document.getElementById(id);
+      if (input) input.value = value;
+    });
     updateBatchScoreCount();
   }
 
