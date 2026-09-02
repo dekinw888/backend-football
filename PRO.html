@@ -2198,6 +2198,28 @@ function switchTab(tabName, btnElement) {
     toggleBetSlip(true);
   }
 
+  function formatHandicap(value, shouldBeNegative) {
+    const number = Number(value);
+    if (!Number.isFinite(number) || number === 0) return '0';
+    const absolute = Math.abs(number).toFixed(2).replace(/\.?0+$/, '');
+    return `${shouldBeNegative ? '-' : '+'}${absolute}`;
+  }
+
+  function toggleTeamBetSelection(mId, type, evt) {
+    if (evt) evt.stopPropagation();
+    const match = matches.find(item => String(item.id) === String(mId));
+    if (!match || isMatchStarted(match) || match.isSettled) return;
+    const key = String(mId);
+    if (selectedMatchIds.some(id => String(id) === key)) {
+      selectedMatchIds = selectedMatchIds.filter(id => String(id) !== key);
+      delete selectedBetsState[key];
+      renderMatchSelectionList();
+      renderSelectedBetForms();
+      return;
+    }
+    selectPriceAndOpen(mId, type);
+  }
+
   function renderMatchSelectionList() {
     const container = document.getElementById('available-matches-list');
     const filterContainer = document.getElementById('league-filter-container');
@@ -2253,11 +2275,11 @@ function switchTab(tabName, btnElement) {
           <div style="width:100%;">
             <div>${leagueTxt}<span class="${badgeClass}">${timeTxt}</span></div>
             <div class="match-compact-line">
-              <span class="compact-price ${homeClass}">${isHomeFav ? m.hdp : m.hdp.replace('-', '+')}</span>
-              <span class="${homeClass}">${m.home}</span>
+              <span class="compact-price ${homeClass}">${formatHandicap(m.hdp, isHomeFav)}</span>
+              <span class="${homeClass}" onclick="toggleTeamBetSelection('${m.id}','${isHomeFav ? 'tor' : 'rong'}',event)">${m.home}</span>
               <span style="color:var(--sub);">vs</span>
-              <span class="${awayClass}">${m.away}</span>
-              <span class="compact-price ${awayClass}">${isHomeFav ? m.hdp.replace('-', '+') : m.hdp}</span>
+              <span class="${awayClass}" onclick="toggleTeamBetSelection('${m.id}','${isHomeFav ? 'rong' : 'tor'}',event)">${m.away}</span>
+              <span class="compact-price ${awayClass}">${formatHandicap(m.hdp, !isHomeFav)}</span>
               <span class="compact-ou">สูงต่ำ ${m.ou}</span>
             </div>
             <div class="match-compact-hint">แตะชื่อทีมเพื่อเปิดบิลเดิมพัน</div>
