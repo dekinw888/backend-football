@@ -1,4 +1,7 @@
 -- Safe production migration: does not drop existing users, matches, odds, or bets.
+ALTER TABLE users
+  ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'APPROVED';
+
 CREATE TABLE IF NOT EXISTS bet_tickets (
   id SERIAL PRIMARY KEY,
   user_id INT REFERENCES users(id) ON DELETE CASCADE,
