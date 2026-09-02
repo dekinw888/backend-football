@@ -555,6 +555,63 @@ input.input-field:focus,select.input-field:focus{border-color:var(--gold);box-sh
 .sidebar-alert-badge,.wallet-notify-badge{background:var(--red);box-shadow:0 0 12px rgba(255,30,30,.75)}
 @media(max-width:700px){.rb-wheel{width:230px;height:230px}.rb-wheel-center{width:76px;height:76px}}
 
+/* RB-BET login glass, circuit and glow effects */
+.auth-modal{
+  background:
+    radial-gradient(circle at 18% 22%,rgba(255,26,64,.14) 0 2px,transparent 3px),
+    radial-gradient(circle at 82% 72%,rgba(255,26,64,.16) 0 2px,transparent 3px),
+    linear-gradient(rgba(220,20,60,.08) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(220,20,60,.08) 1px,transparent 1px),
+    radial-gradient(circle at center,#230407 0%,#050001 100%);
+  background-size:auto,auto,120px 120px,120px 120px,auto;
+  overflow:hidden;
+}
+.auth-modal::before,.auth-modal::after{
+  content:"";position:absolute;pointer-events:none;inset:0;
+}
+.auth-modal::before{
+  background:
+    linear-gradient(90deg,transparent 14.9%,rgba(220,20,60,.24) 15%,transparent 15.1%),
+    linear-gradient(0deg,transparent 29.9%,rgba(220,20,60,.24) 30%,transparent 30.1%),
+    linear-gradient(0deg,transparent 64.9%,rgba(220,20,60,.2) 65%,transparent 65.1%),
+    linear-gradient(90deg,transparent 84.9%,rgba(220,20,60,.2) 85%,transparent 85.1%);
+  box-shadow:inset 0 0 100px rgba(255,0,50,.08);
+}
+.auth-modal::after{
+  background:
+    radial-gradient(circle at 15% 30%,#ff1a40 0 4px,transparent 5px),
+    radial-gradient(circle at 85% 65%,#ff1a40 0 4px,transparent 5px);
+  filter:drop-shadow(0 0 9px #ff1a40);
+}
+.auth-box{
+  position:relative;z-index:1;max-width:410px;padding:34px 32px;
+  background:rgba(20,10,12,.72);border:1px solid rgba(255,50,80,.28);
+  border-radius:20px;backdrop-filter:blur(15px);
+  box-shadow:0 15px 35px rgba(0,0,0,.8),0 0 25px rgba(255,0,50,.15);
+  animation:auth-card-in .45s ease-out both;
+}
+@keyframes auth-card-in{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+.auth-box h2{color:#fff;text-shadow:0 0 14px rgba(255,51,85,.45);letter-spacing:.5px}
+.form-group label{color:#c4aeb3}
+.form-group input{
+  background:rgba(40,20,24,.6);border:1px solid rgba(255,255,255,.1);
+  border-radius:12px;padding:12px 15px;transition:border-color .25s,box-shadow .25s;
+}
+.form-group input::placeholder{color:#777}
+.form-group input:focus{
+  border-color:#ff2a4b;box-shadow:0 0 10px rgba(255,42,75,.4);outline:none;
+}
+.auth-btn{
+  border-radius:25px;background:linear-gradient(90deg,#e60026,#ff3355);
+  color:#fff;letter-spacing:.5px;box-shadow:0 0 15px rgba(230,0,38,.6);
+  transition:transform .08s ease-in,box-shadow .2s ease,filter .2s ease;
+}
+.auth-btn:hover{filter:brightness(1.08);box-shadow:0 0 25px rgba(255,51,85,.9)}
+.auth-btn:active{transform:scale(.95)}
+.auth-links a{color:#ff3355;font-weight:600;transition:text-shadow .2s}
+.auth-links a:hover{text-shadow:0 0 10px rgba(255,51,85,.8)}
+@media(max-width:500px){.auth-box{width:calc(100% - 24px);padding:28px 20px;border-radius:16px}}
+
 
 .daily-stats-toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:0 0 14px}.daily-stats-toolbar .group{display:flex;gap:7px;flex-wrap:wrap}.daily-stats-btn{border:1px solid var(--border);background:var(--panel2);color:var(--text);border-radius:9px;padding:8px 11px;cursor:pointer;font-size:12px}.daily-stats-btn:hover{border-color:var(--gold);color:var(--gold)}.daily-stats-btn.primary{background:var(--gold);color:#111;border-color:var(--gold);font-weight:800}.daily-period-note{font-size:11px;color:var(--sub);margin-bottom:10px}.daily-summary-table{width:100%;min-width:650px;border-collapse:collapse}.daily-summary-table th,.daily-summary-table td{padding:9px 8px;border-bottom:1px solid var(--border);text-align:left;font-size:11px}.daily-summary-table th{color:var(--sub);font-weight:600}.daily-archive-card{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px}.daily-archive-head{display:flex;justify-content:space-between;gap:8px;align-items:center}.daily-archive-date{font-weight:800;color:var(--gold)}.daily-archive-meta{font-size:10px;color:var(--sub);margin-top:4px}@media(max-width:700px){.daily-stats-toolbar{align-items:stretch}.daily-stats-toolbar .group{width:100%}.daily-stats-btn{flex:1;min-height:42px}.daily-summary-table{min-width:620px}}
 
