@@ -1421,7 +1421,7 @@
     const rows = await apiRequest('/matches');
     matches = rows.map((row) => ({
       id: row.id,
-      league: 'ทั่วไป',
+      league: '',
       home: row.home_team,
       away: row.away_team,
       time: new Date(row.kickoff_time).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false }),
@@ -2684,13 +2684,20 @@ function switchTab(tabName, btnElement) {
     document.getElementById('btn-fav-away').style = fav === 'away' ? 'background:var(--blue);color:#ffffff;border:none;' : 'background:var(--panel);color:var(--sub);border:1px solid var(--border);';
   }
 
+  function normalizeAdminHdp(value) {
+    const number = Number(value);
+    return Number.isFinite(number) ? String(-Math.abs(number)) : '-0.25';
+  }
+
   async function addMatchToList() {
-    const league = document.getElementById('create-league').value.trim() || 'ทั่วไป';
+    const league = document.getElementById('create-league').value.trim();
     const home = document.getElementById('create-home').value.trim();
     const away = document.getElementById('create-away').value.trim();
     const time = document.getElementById('create-match-time').value.trim();
-    const hdp = document.getElementById('create-hdp').value;
+    const hdp = normalizeAdminHdp(document.getElementById('create-hdp').value);
     const ou = document.getElementById('create-ou').value;
+    const hdpNumber = Number(hdp);
+    const ouNumber = Number(ou);
 
     if (!home || !away) return showCustomAlert('⚠️ ข้อมูลไม่ครบ', 'กรุณากรอกชื่อทีมให้ครบถ้วน');
 
@@ -2714,9 +2721,9 @@ function switchTab(tabName, btnElement) {
                 home_team: home,
                 away_team: away,
                 kickoff_time: new Date(matchTimestamp || Date.now() + 3600000).toISOString(),
-                hdp_home: adminSelectedFav === 'home' ? hdp : hdp.replace('-', ''),
-                hdp_away: adminSelectedFav === 'home' ? hdp.replace('-', '') : hdp,
-                over_under: ou,
+                hdp_home: adminSelectedFav === 'home' ? hdpNumber : Math.abs(hdpNumber),
+                hdp_away: adminSelectedFav === 'home' ? Math.abs(hdpNumber) : hdpNumber,
+                over_under: ouNumber,
                 odds_home: 0.9, odds_away: 0.9, odds_over: 0.9, odds_under: 0.9
               })
             });
@@ -2739,9 +2746,9 @@ function switchTab(tabName, btnElement) {
               home_team: home,
               away_team: away,
               kickoff_time: new Date(matchTimestamp || Date.now() + 3600000).toISOString(),
-              hdp_home: adminSelectedFav === 'home' ? hdp : hdp.replace('-', ''),
-              hdp_away: adminSelectedFav === 'home' ? hdp.replace('-', '') : hdp,
-              over_under: ou,
+              hdp_home: adminSelectedFav === 'home' ? hdpNumber : Math.abs(hdpNumber),
+              hdp_away: adminSelectedFav === 'home' ? Math.abs(hdpNumber) : hdpNumber,
+              over_under: ouNumber,
               odds_home: 0.9, odds_away: 0.9, odds_over: 0.9, odds_under: 0.9
             })
           });
@@ -2768,7 +2775,7 @@ function switchTab(tabName, btnElement) {
     document.getElementById('create-home').value = m.home;
     document.getElementById('create-away').value = m.away;
     document.getElementById('create-match-time').value = m.time;
-    document.getElementById('create-hdp').value = m.hdp;
+    document.getElementById('create-hdp').value = normalizeAdminHdp(m.hdp);
     document.getElementById('create-ou').value = m.ou;
     setAdminFav(m.fav);
     
