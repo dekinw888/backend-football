@@ -2162,7 +2162,8 @@ function switchTab(tabName, btnElement) {
     renderMatchSelectionList(); renderSelectedBetForms();
   }
 
-  function openMatchBetSlip(matchId) {
+  function openMatchBetSlip(matchId, evt) {
+    if (evt && evt.target && evt.target.closest('.team-click-target')) return;
     const m = matches.find(match => String(match.id) === String(matchId));
     if (!m || isMatchStarted(m) || m.isSettled) return;
 
@@ -2175,6 +2176,19 @@ function switchTab(tabName, btnElement) {
     renderMatchSelectionList();
     renderSelectedBetForms();
     toggleBetSlip(true);
+  }
+
+  function toggleMatchBetSelection(matchId, evt) {
+    if (evt && evt.target && evt.target.closest('button, input, .team-click-target')) return;
+    const key = String(matchId);
+    if (selectedMatchIds.some(id => String(id) === key)) {
+      selectedMatchIds = selectedMatchIds.filter(id => String(id) !== key);
+      delete selectedBetsState[key];
+      renderMatchSelectionList();
+      renderSelectedBetForms();
+      return;
+    }
+    openMatchBetSlip(matchId);
   }
 
   function toggleBetSlip(force) {
@@ -2271,14 +2285,14 @@ function switchTab(tabName, btnElement) {
 
       const selectedType = selectedBetsState[String(m.id)]?.type || '';
       return `
-        <div class="match-select-item ${isSelected ? 'selected' : ''} ${isStarted ? 'disabled-match' : ''}" onclick="openMatchBetSlip('${m.id}')">
+        <div class="match-select-item ${isSelected ? 'selected' : ''} ${isStarted ? 'disabled-match' : ''}" onclick="toggleMatchBetSelection('${m.id}',event)">
           <div style="width:100%;">
             <div>${leagueTxt}<span class="${badgeClass}">${timeTxt}</span></div>
             <div class="match-compact-line">
               <span class="compact-price ${homeClass}">${formatHandicap(m.hdp, isHomeFav)}</span>
-              <span class="${homeClass}" onclick="toggleTeamBetSelection('${m.id}','${isHomeFav ? 'tor' : 'rong'}',event)">${m.home}</span>
+              <span class="team-click-target ${homeClass}" onclick="toggleTeamBetSelection('${m.id}','${isHomeFav ? 'tor' : 'rong'}',event)">${m.home}</span>
               <span style="color:var(--sub);">vs</span>
-              <span class="${awayClass}" onclick="toggleTeamBetSelection('${m.id}','${isHomeFav ? 'rong' : 'tor'}',event)">${m.away}</span>
+              <span class="team-click-target ${awayClass}" onclick="toggleTeamBetSelection('${m.id}','${isHomeFav ? 'rong' : 'tor'}',event)">${m.away}</span>
               <span class="compact-price ${awayClass}">${formatHandicap(m.hdp, !isHomeFav)}</span>
               <span class="compact-ou">สูงต่ำ ${m.ou}</span>
             </div>
