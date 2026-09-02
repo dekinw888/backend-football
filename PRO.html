@@ -249,7 +249,8 @@
   .admin-match-title{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
   .admin-score-inline{display:inline-flex;align-items:center;gap:4px;margin-left:5px}
   .admin-score-inline input{width:42px!important;margin:0!important;text-align:center;padding:4px!important;min-height:30px}
-  .admin-result-action{display:flex;align-items:center;gap:8px;margin-top:7px;padding-top:6px;border-top:1px dashed var(--border);font-size:11px;color:var(--sub)}
+  .admin-result-action{display:inline-flex;align-items:center;gap:8px;margin-left:6px;font-size:11px;color:var(--sub)}
+  .admin-result-action .btn-sm{padding:5px 9px!important;white-space:nowrap}
   @media(max-width:600px){.match-compact-line{font-size:13px;gap:5px}.match-compact-hint{font-size:9px}}
   @media(max-width:600px){.match-select-item{padding:5px 7px;margin-bottom:4px}.match-preview-odds{grid-template-columns:repeat(4,minmax(0,1fr));gap:3px}.match-preview-odd{padding:4px 2px;min-height:36px}.match-preview-odd .label{font-size:9px}.match-preview-odd .value{font-size:13px}.match-tap-hint{font-size:9px;margin-top:3px}}
   /* BET SLIP / PRICE BUTTONS v130 */
@@ -3046,7 +3047,8 @@ function renderAdminMatchesBuilder() {
                   <input type="number" min="0" step="1" id="score-home-${m.id}" class="input-field" placeholder="0" oninput="updateBatchScoreCount()">
                   <strong>-</strong>
                   <input type="number" min="0" step="1" id="score-away-${m.id}" class="input-field" placeholder="0" oninput="updateBatchScoreCount()">
-                </span>` : ''}
+                </span>
+                <button class="btn-sm btn-success admin-result-action" onclick="processMatchResult('${m.id}')">✅ ออกผล / สรุปเดิมพัน</button>` : ''}
               </div>
               <div style="font-size:12px;color:var(--gold);margin-top:2px;">แฮนดิแคป: ${m.hdp} | สูงต่ำ: ${m.ou}</div>
               ${settled ? `<div style="margin-top:8px;display:inline-flex;padding:6px 10px;border-radius:7px;background:rgba(39,174,96,.12);border:1px solid rgba(39,174,96,.35);color:var(--green);font-weight:800;">✅ สรุปผลแล้ว: ${m.homeScore} - ${m.awayScore}</div>` : ''}
@@ -3056,7 +3058,6 @@ function renderAdminMatchesBuilder() {
               <button class="btn-sm btn-danger" onclick="deleteMatch('${m.id}')">🗑️ ลบ</button>
             </div>
           </div>
-          ${!settled ? `<div class="admin-result-action"><span>🏁 ผลสกอร์</span><button class="btn-sm btn-success" style="padding:7px 12px;" onclick="processMatchResult('${m.id}')">✅ ออกผล / สรุปเดิมพัน</button></div>` : ''}
         </div>`;
     };
 
