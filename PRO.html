@@ -1443,6 +1443,41 @@
     renderUserBetsHistory();
   }
 
+  async function loadWalletHistoryFromApi() {
+    if (!apiToken) return;
+    const rows = await apiRequest(currentUser.role === 'admin' ? '/wallet/admin' : '/wallet/mine');
+    walletHistory = rows.map(row => ({
+      id: row.id,
+      member: row.username || currentUser.phone,
+      userPhone: row.username || currentUser.phone,
+      type: row.type === 'DEPOSIT' ? 'ฝากเงิน' : 'ถอนเงิน',
+      cls: row.type === 'DEPOSIT' ? 'deposit' : 'withdraw',
+      amount: Number(row.amount || 0),
+      wallet: row.wallet || '-',
+      status: row.status.toLowerCase(),
+      time: row.created_at ? new Date(row.created_at).toLocaleString('th-TH') : '-'
+    }));
+    renderWalletHistory();
+    renderAdminWalletRequests();
+    updateDashboardData();
+  }
+
+  async function loadAdminUsersFromApi() {
+    if (!apiToken || !currentUser || currentUser.role !== 'admin') return;
+    const rows = await apiRequest('/admin/users');
+    userDatabase = rows.map(row => ({
+      id: row.id,
+      fullname: row.username,
+      phone: row.username,
+      pass: '',
+      credit: Number(row.balance || 0),
+      role: row.role === 'ADMIN' ? 'admin' : 'user',
+      status: row.status === 'APPROVED' ? 'approved' : row.status === 'REJECTED' ? 'rejected' : 'pending'
+    }));
+    renderAdminUserTable();
+    updateDashboardData();
+  }
+
   let depositChartInst = null;
   let betChartInst = null;
 
@@ -1662,8 +1697,7 @@
       await loadWalletHistoryFromApi();
       await loadAdminUsersFromApi();
     } catch (error) {
-      currentUser = userDatabase.find(u => u.phone === phone && u.pass === pass);
-      if (!currentUser) return showCustomAlert('⚠️ เข้าสู่ระบบไม่สำเร็จ', error.message);
+      return showCustomAlert('⚠️ เข้าสู่ระบบไม่สำเร็จ', error.message);
     }
 
     sessionStorage.setItem('fdl_logged_in_phone', currentUser.phone);
@@ -2620,7 +2654,7 @@ function switchTab(tabName, btnElement) {
   }
   function resultRate(r){return r==='win-full'?FIXED_BET_MULTIPLIER:r==='win-half'?1.4:r==='push'?1:r==='lose-half'?.5:0;}
   function resultLabel(r){const m={'win-full':['ชนะเต็ม','var(--green)'],'win-half':['ชนะครึ่ง','var(--green)'],'push':['เสมอ / คืนทุน','var(--gold)'],'lose-half':['เสียครึ่ง','var(--red)'],'lose-full':['เสียเต็ม','var(--red)']};const x=m[r]||['รอสรุปผล','var(--sub)'];return `<span style="color:${x[1]};font-weight:800;">${x[0]}</span>`;}
-  function processMatchResult(mId){
+  async function processMatchResult(mId){
     const hi=document.getElementById(`score-home-${mId}`),ai=document.getElementById(`score-away-${mId}`);
     if(!hi||!ai)return showCustomAlert('⚠️ ไม่พบช่องสกอร์','กรุณารีเฟรชหน้าแล้วลองใหม่อีกครั้ง');
     if(hi.value===''||ai.value==='')return showCustomAlert('⚠️ ข้อมูลไม่ครบ','กรุณากรอกสกอร์เจ้าบ้านและทีมเยือนให้ครบ');
@@ -2628,6 +2662,17 @@ function switchTab(tabName, btnElement) {
     const match=matches.find(m=>String(m.id)===String(mId));if(!match)return showCustomAlert('⚠️ ไม่พบคู่บอล','ไม่พบข้อมูลคู่บอลในระบบ');
     if(match.isSettled)return showCustomAlert('⚠️ คู่นี้สรุปผลแล้ว',`${match.home} ${match.homeScore} - ${match.awayScore} ${match.away}`);
     if(!confirm(`ยืนยันออกผลสกอร์?\n\n${match.home} ${hs} - ${as} ${match.away}\n\nระบบจะสรุปเดิมพันที่เกี่ยวข้องและบันทึกลงประวัติการเดิมพัน`))return;
+    if(apiToken){
+      try{
+        await apiRequest(`/settle/match/${mId}`,{method:'POST',body:JSON.stringify({home_score:hs,away_score:as})});
+        await loadMatchesFromApi();
+        await loadBetHistoryFromApi();
+        await loadAdminUsersFromApi();
+        return showCustomAlert('✅ ออกผลสำเร็จ',`บันทึกผล ${match.home} ${hs}-${as} ${match.away} และสรุปยอดในฐานข้อมูลแล้ว`);
+      }catch(error){
+        return showCustomAlert('⚠️ ออกผลไม่สำเร็จ',error.message);
+      }
+    }
     const now=new Date().toLocaleString('th-TH');match.isSettled=true;match.homeScore=hs;match.awayScore=as;match.resultScore=`${hs}-${as}`;match.resultAt=now;
     let bills=0,paid=0;
     betsHistory.forEach(b=>{
@@ -2650,7 +2695,7 @@ function switchTab(tabName, btnElement) {
   }
 
   
-  function processAllMatchResults() {
+  async function processAllMatchResults() {
     const pending = matches.filter(m => !m.isSettled);
     const rows = [];
 
@@ -2692,6 +2737,20 @@ function switchTab(tabName, btnElement) {
     const summary = rows.map(x => `• ${x.match.home} ${x.homeScore}-${x.awayScore} ${x.match.away}`).join('\n');
 
     if (!confirm(`ยืนยันสรุปผลทั้งหมด ${rows.length} คู่?\n\n${summary}\n\nระบบจะสรุปเดิมพันที่เกี่ยวข้องในครั้งเดียว`)) return;
+    if (apiToken) {
+      try {
+        await Promise.all(rows.map(x => apiRequest(`/settle/match/${x.match.id}`, {
+          method: 'POST',
+          body: JSON.stringify({ home_score: x.homeScore, away_score: x.awayScore })
+        })));
+        await loadMatchesFromApi();
+        await loadBetHistoryFromApi();
+        await loadAdminUsersFromApi();
+        return showCustomAlert('✅ ออกผลสำเร็จ', `บันทึกผลทั้งหมด ${rows.length} คู่ลงฐานข้อมูลแล้ว`);
+      } catch (error) {
+        return showCustomAlert('⚠️ ออกผลไม่สำเร็จ', error.message);
+      }
+    }
 
     const now = new Date().toLocaleString('th-TH');
     let paid = 0;
@@ -3207,41 +3266,6 @@ function renderUserBetsHistory() {
       updateCreditDisplay();
     }
 
-    async function loadWalletHistoryFromApi() {
-      if (!apiToken) return;
-      const rows = await apiRequest(currentUser.role === 'admin' ? '/wallet/admin' : '/wallet/mine');
-      walletHistory = rows.map(row => ({
-        id: row.id,
-        member: row.username || currentUser.phone,
-        userPhone: row.username || currentUser.phone,
-        type: row.type === 'DEPOSIT' ? 'ฝากเงิน' : 'ถอนเงิน',
-        cls: row.type === 'DEPOSIT' ? 'deposit' : 'withdraw',
-        amount: Number(row.amount || 0),
-        wallet: row.wallet || '-',
-        status: row.status.toLowerCase(),
-        time: row.created_at ? new Date(row.created_at).toLocaleString('th-TH') : '-'
-      }));
-      renderWalletHistory();
-      renderAdminWalletRequests();
-      updateDashboardData();
-    }
-
-    async function loadAdminUsersFromApi() {
-      if (!apiToken || !currentUser || currentUser.role !== 'admin') return;
-      const rows = await apiRequest('/admin/users');
-      userDatabase = rows.map(row => ({
-        id: row.id,
-        fullname: row.username,
-        phone: row.username,
-        pass: '',
-        credit: Number(row.balance || 0),
-        role: row.role === 'ADMIN' ? 'admin' : 'user',
-        status: row.status === 'APPROVED' ? 'approved' : 'pending'
-      }));
-      renderAdminUserTable();
-      updateDashboardData();
-    }
-
     saveData();
     showCustomAlert('✅ ส่งเรื่องสำเร็จ', 'ระบบได้รับเรื่องของคุณแล้ว กรุณารอแอดมินอนุมัติ 5-10 นาที');
     
@@ -3417,7 +3441,7 @@ function renderUserBetsHistory() {
 
     userDatabase.forEach(u => {
       const isSelfAdmin = currentUser && currentUser.phone === u.phone && u.role === 'admin';
-      const isPending = u.role !== 'admin' && u.status !== 'approved';
+      const isPending = u.role !== 'admin' && u.status === 'pending';
       const menuId = 'menu-' + u.phone.replace(/[^0-9a-zA-Z]/g, '');
       const approvalButtons = isPending ? `
         <button class="btn-sm btn-success" onclick="approveUserAccount('${u.phone}')">✅ อนุมัติ</button>
@@ -3476,11 +3500,21 @@ function renderUserBetsHistory() {
     showCustomAlert('✅ อนุมัติสมาชิกสำเร็จ', `${u.fullname} สามารถเข้าสู่ระบบได้แล้ว`);
   }
 
-  function rejectUserAccount(phone) {
+  async function rejectUserAccount(phone) {
     if (!currentUser || currentUser.role !== 'admin') return showCustomAlert('⛔ ไม่มีสิทธิ์', 'เมนูนี้อนุญาตเฉพาะ ADMIN เท่านั้น');
     const u = userDatabase.find(x => x.phone === phone);
     if (!u || u.role === 'admin') return;
-    openActionConfirm('❌ ปฏิเสธสมาชิก', `ต้องการปฏิเสธการสมัครของ <b>${u.fullname}</b> (${u.phone}) ใช่หรือไม่?`, () => {
+    openActionConfirm('❌ ปฏิเสธสมาชิก', `ต้องการปฏิเสธการสมัครของ <b>${u.fullname}</b> (${u.phone}) ใช่หรือไม่?`, async () => {
+      if (apiToken && u.id) {
+        try {
+          await apiRequest(`/admin/users/${u.id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ status: 'REJECTED' })
+          });
+        } catch (error) {
+          return showCustomAlert('⚠️ ปฏิเสธสมาชิกไม่สำเร็จ', error.message);
+        }
+      }
       const idx = userDatabase.findIndex(x => x.phone === phone);
       if (idx > -1) userDatabase.splice(idx, 1);
       saveData();
