@@ -242,6 +242,11 @@
   .match-preview-odd.rong .value{color:var(--blue)}
   .match-preview-odd.over .value{color:var(--green)}
   .match-preview-odd.under .value{color:#b58cff}
+  .match-compact-line{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:14px;font-weight:800;line-height:1.35}
+  .match-compact-line .team-tor{color:var(--red)}.match-compact-line .team-rong{color:var(--blue)}
+  .match-compact-line .compact-price{font-weight:900}.match-compact-line .compact-ou{color:var(--gold);font-weight:900}
+  .match-compact-hint{font-size:10px;color:var(--sub);margin-top:2px}
+  @media(max-width:600px){.match-compact-line{font-size:13px;gap:5px}.match-compact-hint{font-size:9px}}
   @media(max-width:600px){.match-select-item{padding:5px 7px;margin-bottom:4px}.match-preview-odds{grid-template-columns:repeat(4,minmax(0,1fr));gap:3px}.match-preview-odd{padding:4px 2px;min-height:36px}.match-preview-odd .label{font-size:9px}.match-preview-odd .value{font-size:13px}.match-tap-hint{font-size:9px;margin-top:3px}}
   /* BET SLIP / PRICE BUTTONS v130 */
   .price-quick-btn { font-size: 16px !important; font-weight: 900 !important; line-height: 1.25 !important; min-height: 54px; }
@@ -2235,19 +2240,16 @@ function switchTab(tabName, btnElement) {
       return `
         <div class="match-select-item ${isSelected ? 'selected' : ''} ${isStarted ? 'disabled-match' : ''}" onclick="openMatchBetSlip('${m.id}')">
           <div style="width:100%;">
-            <div>${leagueTxt}<div class="${badgeClass}">${timeTxt}</div></div>
-            <div class="match-select-title">
-              <span class="${homeClass}"><span class="bet-label">${isHomeFav ? `ต่อ (${m.home})` : `รอง (${m.home})`}</span><span class="bet-price">${isHomeFav ? m.hdp : m.hdp.replace('-','+')}</span></span>
-              <span style="color:var(--sub); margin:0 4px;">vs</span>
-              <span class="${awayClass}"><span class="bet-label">${isHomeFav ? `รอง (${m.away})` : `ต่อ (${m.away})`}</span><span class="bet-price">${isHomeFav ? m.hdp.replace('-','+') : m.hdp}</span></span>
+            <div>${leagueTxt}<span class="${badgeClass}">${timeTxt}</span></div>
+            <div class="match-compact-line">
+              <span class="compact-price ${homeClass}">${isHomeFav ? m.hdp : m.hdp.replace('-', '+')}</span>
+              <span class="${homeClass}">${m.home}</span>
+              <span style="color:var(--sub);">vs</span>
+              <span class="${awayClass}">${m.away}</span>
+              <span class="compact-price ${awayClass}">${isHomeFav ? m.hdp.replace('-', '+') : m.hdp}</span>
+              <span class="compact-ou">สูงต่ำ ${m.ou}</span>
             </div>
-            <div class="match-preview-odds" aria-label="ราคาของคู่บอล">
-              <div class="match-preview-odd tor"><span class="label">ต่อ</span><span class="value">${isHomeFav ? m.hdp : m.hdp.replace('-', '+')}</span></div>
-              <div class="match-preview-odd rong"><span class="label">รอง</span><span class="value">${isHomeFav ? m.hdp.replace('-', '+') : m.hdp}</span></div>
-              <div class="match-preview-odd over"><span class="label">สูง</span><span class="value">${m.ou}</span></div>
-              <div class="match-preview-odd under"><span class="label">ต่ำ</span><span class="value">${m.ou}</span></div>
-            </div>
-            <div class="match-tap-hint">แตะคู่บอลเพื่อดูราคาและเปิดบิลเดิมพัน</div>
+            <div class="match-compact-hint">แตะชื่อทีมเพื่อเปิดบิลเดิมพัน</div>
           </div>
         </div>`;
     };
