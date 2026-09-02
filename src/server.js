@@ -11,6 +11,7 @@ const settleRoutes = require('./routes/settleRoutes');
 const walletRoutes = require('./routes/walletRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const activityRoutes = require('./routes/activityRoutes');
+const rewardRoutes = require('./routes/rewardRoutes');
 const { autoSettleGoal7Results } = require('./controllers/settleController');
 
 const app = express();
@@ -50,6 +51,7 @@ app.use('/api/settle', settleRoutes);
 app.use('/api/wallet', walletRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/activity', activityRoutes);
+app.use('/api/rewards', rewardRoutes);
 
 const PORT = process.env.PORT || 5000;
 

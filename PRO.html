@@ -88,6 +88,15 @@
   .sidebar-widget { margin-top: auto; padding: 12px; background: var(--panel2); border: 1px solid var(--border); border-radius: 8px; font-size: 12px; color: var(--sub); }
   .widget-title { color: var(--gold); font-weight: bold; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
   .widget-highlight { color: var(--green); font-weight: bold; font-size: 15px; }
+  .rb-club-hero{background:radial-gradient(circle at 75% 20%,rgba(239,75,75,.2),transparent 42%),linear-gradient(145deg,#1b0d16,#121729 60%);border:1px solid rgba(239,75,75,.45);border-radius:16px;padding:20px}
+  .rb-club-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px}
+  .rb-reward-card{background:rgba(18,23,41,.9);border:1px solid var(--border);border-radius:14px;padding:18px}
+  .rb-wheel{width:220px;height:220px;border-radius:50%;margin:16px auto;background:conic-gradient(#ef4b4b 0 36%,#9d1820 36% 56%,#f0b429 56% 68%,#ef4b4b 68% 88%,#38131c 88%);border:8px solid #f0b429;box-shadow:0 0 0 5px #40121a,0 0 30px rgba(239,75,75,.35);display:flex;align-items:center;justify-content:center;color:#fff;font-size:28px}
+  .rb-wheel-center{width:78px;height:78px;border-radius:50%;background:#111522;border:3px solid #f0b429;display:flex;align-items:center;justify-content:center;font-weight:900;text-align:center}
+  .rb-checkin-days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:14px 0}
+  .rb-checkin-day{padding:9px 3px;text-align:center;border:1px solid var(--border);border-radius:8px;color:var(--sub);font-size:11px}
+  .rb-checkin-day.active{border-color:var(--gold);color:var(--gold);background:rgba(240,180,41,.12)}
+  @media(max-width:700px){.rb-club-grid{grid-template-columns:1fr}.rb-wheel{width:190px;height:190px}}
 
   /* Main Content Area */
   main { flex: 1; padding: 22px 26px; overflow-x: hidden; }
@@ -775,6 +784,9 @@
       <button class="nav-btn" onclick="switchTab('history', this)">📋 ประวัติการเล่น</button>
       <button class="nav-btn" onclick="switchTab('wallet', this)">💰 ฝาก/ถอน FDL</button>
       <button class="nav-btn" onclick="switchTab('leaderboard', this)">🏆 จัดอันดับ</button>
+      <div class="nav-section">🎮 RB ใจดีอยากแจก</div>
+      <button class="nav-btn" onclick="switchTab('rb-club', this)">🎡 Lucky Wheel</button>
+      <button class="nav-btn" onclick="switchTab('rb-club', this)">🎁 Daily Check-in</button>
       <button class="nav-btn" onclick="switchTab('promotions', this)">🎁 โปรโมชั่น</button>
 
       <div class="nav-section admin-only-nav">🔐 ระบบหลังบ้าน ADMIN</div>
@@ -1154,6 +1166,31 @@
         </div>
       </div>
 
+      <!-- RB CLUB rewards -->
+      <div id="tab-rb-club" class="tab-content">
+        <div class="rb-club-hero">
+          <h2>🎮 RB ใจดีอยากแจก</h2>
+          <p style="color:var(--sub);margin-top:5px;">กิจกรรมพิเศษสำหรับสมาชิก ลุ้นรางวัลและรับเครดิตทุกวัน</p>
+        </div>
+        <div class="rb-club-grid">
+          <div class="rb-reward-card">
+            <h3 style="color:var(--red);">🎡 Lucky Wheel</h3>
+            <p style="font-size:12px;color:var(--sub);margin-top:5px;">หมุนฟรี 1 ครั้งต่อวัน</p>
+            <div class="rb-wheel"><div class="rb-wheel-center">RB<br>BET</div></div>
+            <button id="rb-wheel-btn" class="btn-action btn-danger" style="width:100%;" onclick="claimLuckyWheel()">🎡 หมุนวงล้อ</button>
+            <div style="font-size:11px;color:var(--sub);margin-top:9px;text-align:center;">ลุ้นรับ 2K · 5K · 10K · 50K · 100K FDL</div>
+          </div>
+          <div class="rb-reward-card">
+            <h3 style="color:var(--gold);">🎁 Daily Check-in</h3>
+            <p style="font-size:12px;color:var(--sub);margin-top:5px;">เข้าสู่ระบบต่อเนื่อง 7 วัน รับรวมวันสุดท้าย 15K</p>
+            <div id="rb-checkin-days" class="rb-checkin-days"></div>
+            <div id="rb-checkin-status" style="font-size:12px;color:var(--sub);margin:12px 0;">กำลังโหลดสถานะ...</div>
+            <button id="rb-checkin-btn" class="btn-action btn-success" style="width:100%;" onclick="claimDailyCheckin()">🎁 รับเครดิตวันนี้</button>
+            <div style="font-size:11px;color:var(--sub);margin-top:9px;">วันที่ 1–6 รับวันละ 2K · วันที่ 7 รับ 15K เท่านั้น</div>
+          </div>
+        </div>
+      </div>
+
       <!-- 5. แท็บโปรโมชั่น -->
       <div id="tab-promotions" class="tab-content">
         <div class="card">
@@ -1498,6 +1535,66 @@
     updateDashboardData();
   }
 
+  function applyRewardBalance(balance) {
+    currentUser.credit = Number(balance || 0);
+    const localUser = userDatabase.find(user => user.phone === currentUser.phone);
+    if (localUser) localUser.credit = currentUser.credit;
+    updateCreditDisplay();
+  }
+
+  function renderRewardDays(streak) {
+    const el = document.getElementById('rb-checkin-days');
+    if (!el) return;
+    el.innerHTML = Array.from({ length: 7 }, (_, index) => {
+      const day = index + 1;
+      return `<div class="rb-checkin-day ${day <= streak ? 'active' : ''}">วันที่ ${day}<br><b>${day === 7 ? '15K' : '2K'}</b></div>`;
+    }).join('');
+  }
+
+  async function loadRewardStatus() {
+    if (!apiToken) return;
+    const status = await apiRequest('/rewards/status');
+    const wheelButton = document.getElementById('rb-wheel-btn');
+    const checkinButton = document.getElementById('rb-checkin-btn');
+    if (wheelButton) {
+      wheelButton.disabled = status.wheelClaimed;
+      wheelButton.textContent = status.wheelClaimed ? '✅ รับสิทธิ์วันนี้แล้ว' : '🎡 หมุนวงล้อ';
+    }
+    renderRewardDays(Number(status.streak || 0));
+    const statusEl = document.getElementById('rb-checkin-status');
+    if (statusEl) statusEl.textContent = `ความต่อเนื่องปัจจุบัน ${Number(status.streak || 0)}/7 วัน`;
+    if (checkinButton) checkinButton.disabled = status.lastCheckinDate === new Date().toISOString().slice(0, 10);
+  }
+
+  async function claimLuckyWheel() {
+    const button = document.getElementById('rb-wheel-btn');
+    if (button) button.disabled = true;
+    try {
+      const result = await apiRequest('/rewards/wheel', { method: 'POST' });
+      applyRewardBalance(result.balance);
+      showCustomAlert('🎡 Lucky Wheel', `ยินดีด้วย คุณได้รับ <b style="color:var(--gold);">${Number(result.amount).toLocaleString()} FDL</b>`);
+      await loadRewardStatus();
+    } catch (error) {
+      if (button) button.disabled = false;
+      showCustomAlert('⚠️ หมุนวงล้อไม่สำเร็จ', error.message);
+    }
+  }
+
+  async function claimDailyCheckin() {
+    const button = document.getElementById('rb-checkin-btn');
+    if (button) button.disabled = true;
+    try {
+      const result = await apiRequest('/rewards/checkin', { method: 'POST' });
+      applyRewardBalance(result.balance);
+      renderRewardDays(Number(result.streak || 0));
+      showCustomAlert('🎁 Daily Check-in', `คุณได้รับ <b style="color:var(--gold);">${Number(result.amount).toLocaleString()} FDL</b>${result.completed ? '<br>ครบ 7 วันแล้ว ยินดีด้วยครับ!' : ''}`);
+      await loadRewardStatus();
+    } catch (error) {
+      if (button) button.disabled = false;
+      showCustomAlert('⚠️ รับ Daily Check-in ไม่สำเร็จ', error.message);
+    }
+  }
+
   async function recordSiteVisit() {
     try {
       const result = await apiRequest('/activity/visit', { method: 'POST' });
@@ -1549,6 +1646,7 @@
       await loadBetHistoryFromApi();
       await loadWalletHistoryFromApi();
       await loadAdminUsersFromApi();
+          await loadRewardStatus();
       await loadAdminActivity();
       updateCreditDisplay();
     } finally {
@@ -1646,6 +1744,7 @@
           await loadBetHistoryFromApi();
           await loadWalletHistoryFromApi();
           await loadAdminUsersFromApi();
+          await loadRewardStatus();
         } catch (error) {
           console.error('Error loading API matches:', error);
         }
