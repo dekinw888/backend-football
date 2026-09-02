@@ -1525,6 +1525,7 @@
           await loadMatchesFromApi();
           await loadBetHistoryFromApi();
           await loadWalletHistoryFromApi();
+          await loadAdminUsersFromApi();
         } catch (error) {
           console.error('Error loading API matches:', error);
         }
@@ -1659,6 +1660,7 @@
       await loadMatchesFromApi();
       await loadBetHistoryFromApi();
       await loadWalletHistoryFromApi();
+      await loadAdminUsersFromApi();
     } catch (error) {
       currentUser = userDatabase.find(u => u.phone === phone && u.pass === pass);
       if (!currentUser) return showCustomAlert('⚠️ เข้าสู่ระบบไม่สำเร็จ', error.message);
@@ -3453,10 +3455,20 @@ function renderUserBetsHistory() {
     });
   }
 
-  function approveUserAccount(phone) {
+  async function approveUserAccount(phone) {
     if (!currentUser || currentUser.role !== 'admin') return showCustomAlert('⛔ ไม่มีสิทธิ์', 'เมนูนี้อนุญาตเฉพาะ ADMIN เท่านั้น');
     const u = userDatabase.find(x => x.phone === phone);
     if (!u || u.role === 'admin') return;
+    if (apiToken && u.id) {
+      try {
+        await apiRequest(`/admin/users/${u.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status: 'APPROVED' })
+        });
+      } catch (error) {
+        return showCustomAlert('⚠️ อนุมัติสมาชิกไม่สำเร็จ', error.message);
+      }
+    }
     u.status = 'approved';
     saveData();
     renderAdminUserTable();
