@@ -1793,7 +1793,14 @@ function switchTab(tabName, btnElement) {
     if (tabName === 'dashboard') { updateDashboardData(); }
     if (tabName === 'history') renderUserBetsHistory();
     if (tabName === 'wallet' || tabName === 'wallet-admin') { renderWalletHistory(); renderAdminWalletRequests(); }
-    if (tabName === 'users-admin') renderAdminUserTable();
+    if (tabName === 'users-admin') {
+      renderAdminUserTable();
+      if (apiToken && currentUser && currentUser.role === 'admin') {
+        loadAdminUsersFromApi().catch(error => {
+          showCustomAlert('⚠️ โหลดสมาชิกไม่สำเร็จ', error.message);
+        });
+      }
+    }
     if (tabName === 'leaderboard') renderLeaderboard();
   }
 
