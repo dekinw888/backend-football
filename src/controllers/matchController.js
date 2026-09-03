@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const socketService = require('../services/socket');
 
 // ดึงรายการคู่บอลทั้งหมดพร้อมราคาต่อรอง
 exports.getAllMatches = async (req, res) => {
@@ -30,6 +31,7 @@ exports.archiveMatch = async (req, res) => {
     if (!result.rows.length) {
       return res.status(404).json({ message: 'Match not found or already archived' });
     }
+    socketService.emitSafe('matches:updated', { reason: 'archive', matchId: result.rows[0].id });
     res.json({ message: 'Match removed from active list', matchId: result.rows[0].id });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -46,7 +48,7 @@ exports.createMatch = async (req, res) => {
   if (Number.isNaN(kickoffDate.getTime()) || kickoffDate.getTime() <= Date.now()) {
     return res.status(400).json({ message: 'kickoff_time must be a future date' });
   }
-  
+
   try {
     // 1. สร้างคู่แข่งขัน
     const matchResult = await db.query(
@@ -62,6 +64,7 @@ exports.createMatch = async (req, res) => {
       [matchId, hdp_home || 0, hdp_away || 0, over_under || 0, odds_home || 0.9, odds_away || 0.9, odds_over || 0.9, odds_under || 0.9]
     );
 
+    socketService.emitSafe('matches:updated', { reason: 'create', matchId });
     res.status(201).json({
       message: 'Match and Odds created successfully',
       match: matchResult.rows[0],
@@ -96,6 +99,7 @@ exports.updateOdds = async (req, res) => {
     if (result.rows.length === 0) {
       return res.status(404).json({ message: 'Odds not found for this match' });
     }
+    socketService.emitSafe('matches:updated', { reason: 'odds', matchId: Number(matchId) });
     res.json({ message: 'Odds updated successfully', odds: result.rows[0] });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -147,6 +151,7 @@ exports.updateMatch = async (req, res) => {
       [hdp_home, hdp_away, over_under, odds_home, odds_away, odds_over, odds_under, matchId]
     );
     await client.query('COMMIT');
+    socketService.emitSafe('matches:updated', { reason: 'update', matchId: Number(matchId) });
     res.json({ message: 'Match updated successfully', match: matchResult.rows[0], odds: oddsResult.rows[0] });
   } catch (error) {
     await client.query('ROLLBACK');
