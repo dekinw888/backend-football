@@ -1,7 +1,9 @@
 const db = require('../config/db');
+const { notifyDeposit, notifyWithdrawal } = require('../services/discordNotifier'); // เรียกใช้บริการแจ้งเตือน
 
 exports.createRequest = async (req, res) => {
   const userId = req.user.id;
+  const username = req.user.username; // รับ username เพื่อส่งเข้า Discord
   const { type, amount, wallet } = req.body;
   const numericAmount = Number(amount);
   if (!['deposit', 'withdraw'].includes(type) || !Number.isFinite(numericAmount) || numericAmount <= 0) {
@@ -30,7 +32,16 @@ exports.createRequest = async (req, res) => {
     );
     const balance = (await client.query('SELECT balance FROM users WHERE id = $1', [userId])).rows[0].balance;
     await client.query('COMMIT');
-    res.status(201).json({ request: request.rows[0], balance });
+
+    // --- ส่งแจ้งเตือน Discord หลัง COMMIT สำเร็จ ---
+    const createdRequest = request.rows[0];
+    if (type === 'deposit') {
+      notifyDeposit(username, numericAmount, wallet, createdRequest.id);
+    } else if (type === 'withdraw') {
+      notifyWithdrawal(username, numericAmount, wallet, createdRequest.id);
+    }
+
+    res.status(201).json({ request: createdRequest, balance });
   } catch (error) {
     await client.query('ROLLBACK');
     res.status(500).json({ error: error.message });
