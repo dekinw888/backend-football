@@ -1674,7 +1674,7 @@ input.input-field:focus,select.input-field:focus{border-color:var(--gold);box-sh
     if (!el) return;
     el.innerHTML = Array.from({ length: 7 }, (_, index) => {
       const day = index + 1;
-      return `<div class="rb-checkin-day ${day <= streak ? 'active' : ''}">วันที่ ${day}<br><b>${day === 7 ? '15K' : '2K'}</b></div>`;
+      return `<div class="rb-checkin-day ${day <= streak ? 'active' : ''}">วันที่ ${day}<br><b>${day === 10 ? '20K' : '2K'}</b></div>`;
     }).join('');
   }
 
