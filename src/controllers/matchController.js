@@ -61,7 +61,7 @@ exports.createMatch = async (req, res) => {
     const oddsResult = await db.query(
       `INSERT INTO odds (match_id, hdp_home, hdp_away, over_under, odds_home, odds_away, odds_over, odds_under)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-      [matchId, hdp_home || 0, hdp_away || 0, over_under || 0, odds_home || 0.9, odds_away || 0.9, odds_over || 0.9, odds_under || 0.9]
+      [matchId, hdp_home || 0, hdp_away || 0, over_under || 0, odds_home || 1.8, odds_away || 1.8, odds_over || 1.8, odds_under || 1.8]
     );
 
     socketService.emitSafe('matches:updated', { reason: 'create', matchId });
