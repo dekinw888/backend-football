@@ -877,22 +877,22 @@ input.input-field:focus,select.input-field:focus{border-color:var(--gold);box-sh
     
     <!-- SIDEBAR NAV -->
     <aside>
-      <div class="nav-item active admin-only-nav" onclick="switchTab('dashboard', this)">🏠 แดชบอร์ด</div>
+      <div class="nav-item active admin-only-nav" onclick="switchTab('dashboard', this)">แดชบอร์ด</div>
 
       <div class="nav-section">⚽ ระบบเดิมพัน</div>
-      <button class="nav-btn" onclick="switchTab('betting', this)">🎯 วางเดิมพัน</button>
-      <button class="nav-btn" onclick="switchTab('history', this)">📋 ประวัติการเล่น</button>
-      <button class="nav-btn" onclick="switchTab('wallet', this)">💰 ฝาก/ถอน FDL</button>
+      <button class="nav-btn" onclick="switchTab('betting', this)">วางเดิมพัน</button>
+      <button class="nav-btn" onclick="switchTab('history', this)">ประวัติการเล่น</button>
+      <button class="nav-btn" onclick="switchTab('wallet', this)">ฝาก/ถอน FDL</button>
       <button class="nav-btn" onclick="switchTab('leaderboard', this)">🏆 จัดอันดับ</button>
       <button class="nav-btn" onclick="switchTab('promotions', this)">🎁 โปรโมชั่น</button>
       <div class="nav-section">🎮 RB ใจดีอยากแจก</div>
-      <button class="nav-btn" onclick="switchTab('rb-club', this)">🎡 Lucky Wheel</button>
-      <button class="nav-btn" onclick="switchTab('rb-club', this)">🎁 Daily Check-in</button>
+      <button class="nav-btn" onclick="switchTab('rb-club', this)">Lucky Wheel</button>
+      <button class="nav-btn" onclick="switchTab('rb-club', this)">Daily Check-in</button>
 
       <div class="nav-section admin-only-nav">🔐 ระบบหลังบ้าน ADMIN</div>
-      <button class="nav-btn admin-only-nav" onclick="switchTab('manage', this)">⚙️ จัดการราคา/สรุปผล <span id="sidebar-badge-manage" class="sidebar-alert-badge">0</span></button>
-      <button class="nav-btn admin-only-nav" onclick="switchTab('wallet-admin', this)">💰 จัดการ ฝาก/ถอน <span id="sidebar-badge-wallet" class="sidebar-alert-badge">0</span></button>
-      <button class="nav-btn admin-only-nav" onclick="switchTab('users-admin', this)">👥 จัดการสมาชิก <span id="sidebar-badge-users" class="sidebar-alert-badge">0</span></button>
+      <button class="nav-btn admin-only-nav" onclick="switchTab('manage', this)"> จัดการราคา/ผลสรุป <span id="sidebar-badge-manage" class="sidebar-alert-badge">0</span></button>
+      <button class="nav-btn admin-only-nav" onclick="switchTab('wallet-admin', this)">จัดการ ฝาก/ถอน <span id="sidebar-badge-wallet" class="sidebar-alert-badge">0</span></button>
+      <button class="nav-btn admin-only-nav" onclick="switchTab('users-admin', this)">จัดการสมาชิก <span id="sidebar-badge-users" class="sidebar-alert-badge">0</span></button>
 
       <div class="nav-section">⚙️ ระบบ</div>
       <button class="nav-btn danger" onclick="logout()" style="color:var(--red);">🚪 ออกจากระบบ</button>
@@ -1059,7 +1059,7 @@ input.input-field:focus,select.input-field:focus{border-color:var(--gold);box-sh
       <div id="tab-betting" class="tab-content active">
         <div class="card">
           <div class="card-head">
-            <h3>⚽ คู่บอลวันนี้เปิดรับเดิมพัน</h3>
+            <h3>คู่บอลวันนี้</h3>
           </div>
 
           <div class="controls-row">
@@ -1079,7 +1079,7 @@ input.input-field:focus,select.input-field:focus{border-color:var(--gold);box-sh
 
         <div id="left-bet-slip" class="left-bet-slip" aria-label="บิลเดิมพันด้านข้าง">
           <div class="left-bet-slip-head">
-            <div class="left-bet-slip-title">🎫 บิลเดิมพัน <span id="selected-count-title" class="left-bet-slip-count">0</span></div>
+            <div class="left-bet-slip-title"> บิลเดิมพัน <span id="selected-count-title" class="left-bet-slip-count">0</span></div>
             <button class="left-bet-slip-close" onclick="toggleBetSlip(false)" title="ปิดบิล">×</button>
           </div>
           <div class="left-bet-slip-body">
@@ -1098,7 +1098,7 @@ input.input-field:focus,select.input-field:focus{border-color:var(--gold);box-sh
               <div style="font-size:11px;color:var(--sub);margin-bottom:8px;">ขั้นต่ำ 10,000 FDL | สูงสุด 200,000 FDL</div>
               <input type="text" id="parlay-amount-input" class="input-field" placeholder="จำนวนเงินเดิมพันสเต็ป" oninput="formatCurrencyInput(this); calculateParlayPayout();">
               <div style="font-size:12px;color:var(--green);font-weight:800;text-align:right;margin-top:6px;">ชนะได้ประมาณ <span id="parlay-payout-text">0</span> FDL</div>
-              <button class="btn-action btn-success" style="margin-top:8px!important;width:100%;" onclick="saveAllBets()">🎯 วางเดิมพัน</button>
+              <button class="btn-action btn-success" style="margin-top:8px!important;width:100%;" onclick="saveAllBets()">วางเดิมพัน</button>
             </div>
           </div>
           <div class="left-bet-slip-foot">
@@ -1119,7 +1119,7 @@ input.input-field:focus,select.input-field:focus{border-color:var(--gold);box-sh
         <div class="card">
           <div class="history-toolbar">
             <div class="history-title-wrap">
-              <h3>📋 ประวัติการเดิมพัน</h3>
+              <h3>ประวัติการเดิมพัน</h3>
               <div class="history-desc">แสดงเฉพาะวันที่เลือก เพื่อให้ดูง่ายและไม่ปะปนกับบิลเก่า</div>
             </div>
             <div class="history-filter-area">
@@ -1157,12 +1157,11 @@ input.input-field:focus,select.input-field:focus{border-color:var(--gold);box-sh
       <div id="tab-wallet" class="tab-content">
         <div class="card">
           <div class="card-head">
-            <h3>💳 ทำรายการ ฝาก / ถอน สกุลเงิน FDL</h3>
           </div>
           
           <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
-            <button class="btn-action btn-success" style="flex:1; padding: 12px;" onclick="showWalletForm('deposit')">📥 ฝากเงิน FDL</button>
-            <button class="btn-action btn-danger" style="flex:1; padding: 12px;" onclick="showWalletForm('withdraw')">📤 ถอนเงิน FDL</button>
+            <button class="btn-action btn-success" style="flex:1; padding: 12px;" onclick="showWalletForm('deposit')">ฝากเครดิต</button>
+            <button class="btn-action btn-danger" style="flex:1; padding: 12px;" onclick="showWalletForm('withdraw')">ถอนเครดิต</button>
             <button class="btn-action" style="flex:1; padding: 12px; background: var(--blue); color: #fff;" onclick="toggleWalletHistory()">📜 ประวัติฝาก/ถอน</button>
           </div>
 
@@ -1171,8 +1170,8 @@ input.input-field:focus,select.input-field:focus{border-color:var(--gold);box-sh
             <h4 id="wallet-form-title" style="margin-bottom: 12px; color: var(--gold); font-size: 16px;">ทำรายการเครดิต FDL</h4>
             
             <div id="wallet-info-box" style="background: rgba(240, 180, 41, 0.1); border: 1px dashed var(--gold); padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 13px; color: var(--text); line-height: 1.5;">
-              📌 <b>ช่องทางฝาก/ถอนเครดิต:</b><br>
-              • ติดต่อในประเทศ : <span style="color:var(--gold); font-weight:bold;"> แจ้งฝาก/ถอน DM.879052</span><br>
+              📌 <b>ช่องทางฝาก/ถอน(เครดิตFDL) </b><br>
+              • ติดต่อในประเทศเท่านั้น : <span style="color:var(--gold); font-weight:bold;"> แจ้งฝาก/ถอน DM.879052</span><br>
               • รอดำเนินการให้ภายใน 5-10 นาที
             </div>
 
@@ -1192,7 +1191,7 @@ input.input-field:focus,select.input-field:focus{border-color:var(--gold);box-sh
               <button type="button" class="quick-amt-btn clear-btn" onclick="clearQuickAmount()">ล้าง</button>
             </div>
 
-            <button class="btn-action" style="margin-top: 5px; padding: 12px;" onclick="processWalletTransaction()">🚀 ส่งเรื่องแจ้งรายการ</button>
+            <button class="btn-action" style="margin-top: 5px; padding: 12px;" onclick="processWalletTransaction()">ส่งเรื่องแจ้งรายการ</button>
           </div>
           
           <!-- ส่วนประวัติการทำรายการ -->
@@ -1274,19 +1273,19 @@ input.input-field:focus,select.input-field:focus{border-color:var(--gold);box-sh
         </div>
         <div class="rb-club-grid">
           <div class="rb-reward-card">
-            <h3 style="color:var(--red);">🎡 Lucky Wheel</h3>
+            <h3 style="color:var(--red);">Lucky Wheel</h3>
             <p style="font-size:12px;color:var(--sub);margin-top:5px;">หมุนฟรี 1 ครั้งต่อวัน</p>
             <div class="rb-wheel"><div class="rb-wheel-center">RB<br>BET</div></div>
-            <button id="rb-wheel-btn" class="btn-action btn-danger" style="width:100%;" onclick="claimLuckyWheel()">🎡 หมุนวงล้อ</button>
-            <div style="font-size:11px;color:var(--sub);margin-top:9px;text-align:center;">ลุ้นรับ 2K · 5K · 10K · 50K · 100K FDL</div>
+            <button id="rb-wheel-btn" class="btn-action btn-danger" style="width:100%;" onclick="claimLuckyWheel()">หมุนวงล้อ</button>
+            <div style="font-size:11px;color:var(--sub);margin-top:9px;text-align:center;">ลุ้นรับ 2,000 · 5,000 · 10,000 · 50,000 · 100,000 FDL</div>
           </div>
           <div class="rb-reward-card">
-            <h3 style="color:var(--gold);">🎁 Daily Check-in</h3>
+            <h3 style="color:var(--gold);">Daily Check-in</h3>
             <p style="font-size:12px;color:var(--sub);margin-top:5px;">ล็อกอินต่อเนื่องครบ 7 วัน แล้วรับ 15K ครั้งเดียว</p>
             <div id="rb-checkin-days" class="rb-checkin-days"></div>
             <div id="rb-checkin-status" style="font-size:12px;color:var(--sub);margin:12px 0;">กำลังโหลดสถานะ...</div>
             <button id="rb-checkin-btn" class="btn-action btn-success" style="width:100%;" onclick="claimDailyCheckin()">🎁 รับเครดิตวันนี้</button>
-            <div style="font-size:11px;color:var(--sub);margin-top:9px;">นับวันใหม่เวลา 00:00 · ครบ 7 วันรับ 15K เท่านั้น</div>
+            <div style="font-size:11px;color:var(--sub);margin-top:9px;">นับวันใหม่เวลา 00:00 · ครบ 10 วันรับไปเลย 25K เครดิต </div>
           </div>
         </div>
       </div>
@@ -1295,20 +1294,20 @@ input.input-field:focus,select.input-field:focus{border-color:var(--gold);box-sh
       <div id="tab-promotions" class="tab-content">
         <div class="card">
           <div class="card-head">
-            <h3>🎁 SPECIAL PROMOTIONS | โปรโมชั่นพิเศษ</h3>
+            <h3> SPECIAL PROMOTIONS | โปรโมชั่นพิเศษ</h3>
           </div>
           
           <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 15px;">
             <div style="background: var(--panel2); border: 1px solid var(--border); border-radius: 10px; padding: 15px;">
-              <div style="font-size: 16px; font-weight: bold; color: var(--gold); margin-bottom: 8px;">⚽ 1. ประกันสเต็ป 4 คู่ ( ตายหมดคืนทุน )</div>
-              <div style="color: var(--green); font-weight: bold; margin-bottom: 6px;">🔥 คืนเงินเดิมพัน 100%</div>
+              <div style="font-size: 16px; font-weight: bold; color: var(--gold); margin-bottom: 8px;">1. ประกันสเต็ป 4 คู่ ( ตายหมดคืนทุน )</div>
+              <div style="color: var(--green); font-weight: bold; margin-bottom: 6px;">คืนเงินเดิมพัน 100%</div>
               <div style="font-size: 13px; color: var(--sub); margin-bottom: 4px;">• <b>สิทธิ์ที่ได้รับ:</b> คืนทุนเต็มจำนวนทันที หากเสียเต็มทุกคู่ในบิล</div>
               <div style="font-size: 13px; color: var(--sub);">• <b>เงื่อนไขการรับสิทธิ์:</b> ยอดเดิมพันตั้งแต่ 20,000 FDL ขึ้นไป</div>
             </div>
 
             <div style="background: var(--panel2); border: 1px solid var(--border); border-radius: 10px; padding: 15px;">
-              <div style="font-size: 16px; font-weight: bold; color: var(--gold); margin-bottom: 8px;">⚽ 2. แจ็กพอตสเต็ป 5-6 ( ตายหมดรับโบนัส )</div>
-              <div style="color: var(--green); font-weight: bold; margin-bottom: 6px;">💰 รับทันที คืนทุนคูณ*7 </div>
+              <div style="font-size: 16px; font-weight: bold; color: var(--gold); margin-bottom: 8px;">2. แจ็คพอตสเต็ป 5-7 ( ตายหมด รับคืน7เท่า )</div>
+              <div style="color: var(--green); font-weight: bold; margin-bottom: 6px;">รับทันที คืนทุน*7เท่า </div>
               <div style="font-size: 13px; color: var(--sub); margin-bottom: 4px;">• <b>สิทธิ์ที่ได้รับ:</b> รับเงินรางวัลปลอบใจ คืนทุน x 7 หากเสียเต็มทุกคู่ในบิล</div>
               <div style="font-size: 13px; color: var(--sub);">• <b>เงื่อนไขการรับสิทธิ์:</b> ยอดเดิมพันตั้งแต่ 20,000 FDL ขึ้นไป</div>
             </div>
@@ -1369,7 +1368,7 @@ input.input-field:focus,select.input-field:focus{border-color:var(--gold);box-sh
 <div id="tab-manage" class="tab-content admin-only-content">
         <div class="card">
           <div class="card-head">
-            <h3>⚽ เพิ่มและแก้ไขคู่บอล (เฉพาะแอดมิน)</h3>
+            <h3>⚽ เพิ่มคู่ / แก้ไข (ADMIN) </h3>
           </div>
           
           <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap;">
@@ -1687,17 +1686,17 @@ input.input-field:focus,select.input-field:focus{border-color:var(--gold);box-sh
     const checkinButton = document.getElementById('rb-checkin-btn');
     if (wheelButton) {
       wheelButton.disabled = status.wheelClaimed;
-      wheelButton.textContent = status.wheelClaimed ? '✅ รับสิทธิ์วันนี้แล้ว' : '🎡 หมุนวงล้อ';
+      wheelButton.textContent = status.wheelClaimed ? 'คุณรับสิทธิ์วันนี้แล้ว' : 'หมุนวงล้อ';
     }
     renderRewardDays(Number(status.streak || 0));
     const statusEl = document.getElementById('rb-checkin-status');
     const streak = Number(status.streak || 0);
     if (statusEl) statusEl.textContent = status.checkinClaimed
-      ? 'รับรางวัลครบ 7 วันแล้ว เริ่มนับรอบใหม่วันนี้'
-      : `ล็อกอินต่อเนื่อง ${streak}/7 วัน${streak >= 7 ? ' · รับรางวัลได้แล้ว' : ''}`;
+      ? 'รับรางวัลครบ 10 วันแล้ว เริ่มนับรอบใหม่วันนี้'
+      : `ล็อกอินต่อเนื่อง ${streak}/10 วัน${streak >= 10 ? ' · รับรางวัลได้แล้ว' : ''}`;
     if (checkinButton) {
-      checkinButton.disabled = status.checkinClaimed || streak < 7;
-      checkinButton.textContent = status.checkinClaimed ? '✅ รับรางวัลรอบนี้แล้ว' : streak >= 7 ? '🎁 รับ 15,000 FDL' : `🔒 ต้องล็อกอินอีก ${7 - streak} วัน`;
+      checkinButton.disabled = status.checkinClaimed || streak < 10;
+      checkinButton.textContent = status.checkinClaimed ? 'คุณรับรางวัลรอบนี้ไปแล้ว' : streak >= 10 ? '🎁 รับ 25,000 FDL' : `🔒 ต้องล็อกอินอีก ${10 - streak} วัน`;
     }
   }
 
@@ -1711,12 +1710,12 @@ input.input-field:focus,select.input-field:focus{border-color:var(--gold);box-sh
       await new Promise(resolve => setTimeout(resolve, 3000));
       if (wheel) wheel.classList.remove('spinning');
       applyRewardBalance(result.balance);
-      showCustomAlert('🎡 Lucky Wheel', `ยินดีด้วย คุณได้รับ <b style="color:var(--gold);">${Number(result.amount).toLocaleString()} FDL</b>`);
+      showCustomAlert('Lucky Wheel', `ยินดีด้วย คุณได้รับ <b style="color:var(--gold);">${Number(result.amount).toLocaleString()} FDL</b>`);
       await loadRewardStatus();
     } catch (error) {
       if (wheel) wheel.classList.remove('spinning');
       if (button) button.disabled = false;
-      showCustomAlert('⚠️ หมุนวงล้อไม่สำเร็จ', error.message);
+      showCustomAlert('หมุนวงล้อไม่สำเร็จ', error.message);
     }
   }
 
@@ -1727,11 +1726,11 @@ input.input-field:focus,select.input-field:focus{border-color:var(--gold);box-sh
       const result = await apiRequest('/rewards/checkin', { method: 'POST' });
       applyRewardBalance(result.balance);
       renderRewardDays(Number(result.streak || 0));
-      showCustomAlert('🎁 Daily Check-in', `คุณได้รับ <b style="color:var(--gold);">${Number(result.amount).toLocaleString()} FDL</b>${result.completed ? '<br>ครบ 7 วันแล้ว ยินดีด้วยครับ!' : ''}`);
+      showCustomAlert('Daily Check-in', `คุณได้รับ <b style="color:var(--gold);">${Number(result.amount).toLocaleString()} FDL</b>${result.completed ? '<br>ครบ 7 วันแล้ว ยินดีด้วยครับ!' : ''}`);
       await loadRewardStatus();
     } catch (error) {
       if (button) button.disabled = false;
-      showCustomAlert('⚠️ รับ Daily Check-in ไม่สำเร็จ', error.message);
+      showCustomAlert('รับ Daily Check-in ไม่สำเร็จ', error.message);
     }
   }
 
@@ -2948,7 +2947,7 @@ function switchTab(tabName, btnElement) {
     renderUserBetsHistory();
 
     showCustomAlert(
-      '🎉 การเดิมพันสำเร็จ',
+      'การเดิมพันสำเร็จ',
       `${committedMode === 'parlay' ? 'บิลสเต็ป' : 'บิลเดิมพัน'} ถูกบันทึกเรียบร้อยแล้ว<br>` +
       `ยอดเดิมพัน <b style="color:var(--green);">${Number(total).toLocaleString()} FDL</b><br>` +
       `วันที่ / เวลา <b>${placedAt}</b>`
@@ -3373,7 +3372,7 @@ function renderAdminMatchesBuilder() {
     const batchResultToolbar = `
       <div id="batch-result-toolbar" style="position:sticky;top:8px;z-index:20;margin-bottom:12px;padding:13px;border:1px solid rgba(39,174,96,.45);border-radius:10px;background:linear-gradient(180deg,rgba(20,32,52,.98),rgba(14,22,38,.98));box-shadow:0 8px 22px rgba(0,0,0,.22);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
         <div style="min-width:240px;">
-          <div style="font-weight:900;color:var(--green);">🏁 ออกผลหลายคู่พร้อมกัน</div>
+          <div style="font-weight:900;color:var(--green);">🏁 ออกผลบอลทั้งหมด</div>
           <div style="font-size:11px;color:var(--sub);margin-top:4px;">กรอกสกอร์เฉพาะคู่ที่ยังไม่สรุป แล้วกดปุ่มเดียวเพื่อสรุปผลทั้งหมด</div>
           <div id="batch-filled-count" style="font-size:11px;color:var(--gold);margin-top:5px;">📝 กรอกสกอร์แล้ว 0 คู่</div>
         </div>
@@ -3431,14 +3430,14 @@ function renderAdminMatchesBuilder() {
 
     const pendingSection = `
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin:14px 2px 8px;">
-        <div style="font-weight:900;color:var(--gold);">⏳ คู่บอลที่รอสรุปผล <span style="font-size:11px;color:var(--sub);">(${pendingMatches.length} คู่)</span></div>
+        <div style="font-weight:900;color:var(--gold);"> รอแข่ง/สรุปผล <span style="font-size:11px;color:var(--sub);">(${pendingMatches.length} คู่)</span></div>
       </div>
-      ${pendingMatches.length ? pendingMatches.map(m => renderMatchCard(m,false)).join('') : '<div style="text-align:center;color:var(--sub);padding:18px;border:1px dashed var(--border);border-radius:8px;margin-bottom:12px;">🎉 ไม่มีคู่ที่รอสรุปผล</div>'}`;
+      ${pendingMatches.length ? pendingMatches.map(m => renderMatchCard(m,false)).join('') : '<div style="text-align:center;color:var(--sub);padding:18px;border:1px dashed var(--border);border-radius:8px;margin-bottom:12px;">ไม่มีคู่ที่รอสรุปผล</div>'}`;
 
     const settledSection = `
       <details style="margin-top:14px;border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,.015);" ${settledMatches.length ? '' : 'open'}>
         <summary style="cursor:pointer;padding:12px 14px;font-weight:900;color:var(--green);list-style:none;display:flex;align-items:center;justify-content:space-between;">
-          <span>🏁 คู่บอลที่สรุปผลแล้ว <span style="font-size:11px;color:var(--sub);">(${settledMatches.length} คู่)</span></span>
+          <span> คู่บอล สรุปผลแล้ว <span style="font-size:11px;color:var(--sub);">(${settledMatches.length} คู่)</span></span>
           <span style="display:flex;align-items:center;gap:8px;">
             ${settledMatches.length ? '<button class="btn-sm btn-danger" onclick="event.preventDefault();clearSettledMatches()">🗑️ ล้างรายการที่สรุปแล้ว</button>' : ''}
             <span style="font-size:11px;color:var(--sub);">${settledMatches.length ? 'กดเพื่อดูรายการ' : 'ยังไม่มีรายการ'}</span>
@@ -3535,10 +3534,10 @@ function renderUserBetsHistory() {
       const settled = userBets.filter(b => b.status !== 'pending').length;
       const returned = userBets.reduce((sum,b) => sum + (b.status !== 'pending' ? Number(b.payout || 0) : 0), 0);
       summary.innerHTML = `
-        <div class="history-day-kpi"><span>💰 ยอดเดิมพัน</span><b>${volume.toLocaleString('en-US')} FDL</b></div>
-        <div class="history-day-kpi"><span>🎫 จำนวนบิล</span><b>${userBets.length.toLocaleString('en-US')} บิล</b></div>
-        <div class="history-day-kpi pending"><span>⏳ รอผล</span><b>${pending.toLocaleString('en-US')} บิล</b></div>
-        <div class="history-day-kpi"><span>💵 ยอดรับคืน</span><b>${returned.toLocaleString('en-US')} FDL</b></div>`;
+        <div class="history-day-kpi"><span>ยอดเดิมพัน</span><b>${volume.toLocaleString('en-US')} FDL</b></div>
+        <div class="history-day-kpi"><span>จำนวนบิล</span><b>${userBets.length.toLocaleString('en-US')} บิล</b></div>
+        <div class="history-day-kpi pending"><span>รอผล</span><b>${pending.toLocaleString('en-US')} บิล</b></div>
+        <div class="history-day-kpi"><span>ยอดรับคืน</span><b>${returned.toLocaleString('en-US')} FDL</b></div>`;
     }
 
     tbody.innerHTML = userBets.length
@@ -4564,7 +4563,7 @@ function renderUserBetsHistory() {
 <div id="wallet-toast" class="wallet-toast"><div id="wallet-toast-title" style="font-weight:800"></div><div id="wallet-toast-text" style="font-size:12px;color:#d8deea;margin-top:4px"></div></div>
 
 <div class="mobile-bottom-nav" id="mobile-bottom-nav">
-  <button data-mobile-tab="betting" onclick="mobileGoTab('betting')"><span class="mb-icon">🎯</span>วางเดิมพัน</button>
+  <button data-mobile-tab="betting" onclick="mobileGoTab('betting')"></span>วางเดิมพัน</button>
   <button data-mobile-tab="history" onclick="mobileGoTab('history')"><span class="mb-icon">📋</span>ประวัติ</button>
   <button data-mobile-tab="wallet" onclick="mobileGoTab('wallet')"><span class="mb-icon">💰</span>ฝาก/ถอน</button>
   <button data-mobile-tab="menu" onclick="toggleMobileNav()"><span class="mb-icon">☰</span>เมนู</button>
