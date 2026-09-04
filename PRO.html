@@ -1267,7 +1267,7 @@ input.input-field:focus,select.input-field:focus{border-color:var(--gold);box-sh
       <!-- RB CLUB rewards -->
       <div id="tab-rb-club" class="tab-content">
         <div class="rb-club-hero">
-          <h2>🎮 RB ใจดีอยากแจก</h2>
+          <h2>style="color:var(--Red);"🎮 RB ใจดีอยากแจก</h2>
           <p style="color:var(--sub);margin-top:5px;">กิจกรรมพิเศษสำหรับสมาชิก ลุ้นรางวัลและรับเครดิตทุกวัน</p>
         </div>
         <div class="rb-club-grid">
@@ -1279,7 +1279,7 @@ input.input-field:focus,select.input-field:focus{border-color:var(--gold);box-sh
             <div style="font-size:11px;color:var(--sub);margin-top:9px;text-align:center;">ลุ้นรับ 2,000 · 5,000 · 10,000 · 50,000 · 100,000 FDL</div>
           </div>
           <div class="rb-reward-card">
-            <h3 style="color:var(--gold);">Daily Check-in</h3>
+            <h3 style="color:var(--Red);">Daily Check-in</h3>
             <p style="font-size:12px;color:var(--sub);margin-top:5px;">ล็อกอินต่อเนื่องครบ 10 วัน รับเลย 20K FDL </p>
             <div id="rb-checkin-days" class="rb-checkin-days"></div>
             <div id="rb-checkin-status" style="font-size:12px;color:var(--sub);margin:12px 0;">กำลังโหลดสถานะ...</div>
@@ -1672,7 +1672,7 @@ input.input-field:focus,select.input-field:focus{border-color:var(--gold);box-sh
   function renderRewardDays(streak) {
     const el = document.getElementById('rb-checkin-days');
     if (!el) return;
-    el.innerHTML = Array.from({ length: 7 }, (_, index) => {
+    el.innerHTML = Array.from({ length: 10 }, (_, index) => {
       const day = index + 1;
       return `<div class="rb-checkin-day ${day <= streak ? 'active' : ''}">วันที่ ${day}<br><b>${day === 10 ? '20K' : '2K'}</b></div>`;
     }).join('');
