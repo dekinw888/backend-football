@@ -883,16 +883,16 @@ input.input-field:focus,select.input-field:focus{border-color:var(--gold);box-sh
       <button class="nav-btn" onclick="switchTab('betting', this)">วางเดิมพัน</button>
       <button class="nav-btn" onclick="switchTab('history', this)">ประวัติการเล่น</button>
       <button class="nav-btn" onclick="switchTab('wallet', this)">ฝาก/ถอน FDL</button>
-      <button class="nav-btn" onclick="switchTab('leaderboard', this)">🏆 จัดอันดับ</button>
-      <button class="nav-btn" onclick="switchTab('promotions', this)">🎁 โปรโมชั่น</button>
-      <div class="nav-section">🎮 RB ใจดีอยากแจก</div>
+      <button class="nav-btn" onclick="switchTab('leaderboard', this)">จัดอันดับ</button>
+      <button class="nav-btn" onclick="switchTab('promotions', this)">โปรโมชั่น</button>
+      <div class="nav-section">🎮 RB ใจดีแจกทุกวัน</div>
       <button class="nav-btn" onclick="switchTab('rb-club', this)">Lucky Wheel</button>
       <button class="nav-btn" onclick="switchTab('rb-club', this)">Daily Check-in</button>
 
       <div class="nav-section admin-only-nav">🔐 ระบบหลังบ้าน ADMIN</div>
-      <button class="nav-btn admin-only-nav" onclick="switchTab('manage', this)"> จัดการราคา/ผลสรุป <span id="sidebar-badge-manage" class="sidebar-alert-badge">0</span></button>
+      <button class="nav-btn admin-only-nav" onclick="switchTab('manage', this)"> จัดการ ราคา/ผลสรุป <span id="sidebar-badge-manage" class="sidebar-alert-badge">0</span></button>
       <button class="nav-btn admin-only-nav" onclick="switchTab('wallet-admin', this)">จัดการ ฝาก/ถอน <span id="sidebar-badge-wallet" class="sidebar-alert-badge">0</span></button>
-      <button class="nav-btn admin-only-nav" onclick="switchTab('users-admin', this)">จัดการสมาชิก <span id="sidebar-badge-users" class="sidebar-alert-badge">0</span></button>
+      <button class="nav-btn admin-only-nav" onclick="switchTab('users-admin', this)">จัดการ สมาชิก <span id="sidebar-badge-users" class="sidebar-alert-badge">0</span></button>
 
       <div class="nav-section">⚙️ ระบบ</div>
       <button class="nav-btn danger" onclick="logout()" style="color:var(--red);">🚪 ออกจากระบบ</button>
@@ -1141,7 +1141,6 @@ input.input-field:focus,select.input-field:focus{border-color:var(--gold);box-sh
                   <th>ประเภท</th>
                   <th>คู่แข่งขัน / รายละเอียด</th>
                   <th>เดิมพัน (FDL)</th>
-                  <th>ราคา / ตัวคูณ</th>
                   <th>สถานะ / ผลการแข่ง</th>
                   <th style="text-align:right;min-width:140px;">การจัดการ</th>
                   <th style="min-width:180px;white-space:nowrap;">วันที่ / เวลาเดิมพัน</th>
@@ -1230,7 +1229,7 @@ input.input-field:focus,select.input-field:focus{border-color:var(--gold);box-sh
         <div class="card leaderboard-card">
           <div class="card-head leaderboard-head">
             <div>
-              <h3>🏆 จัดอันดับผู้เล่น</h3>
+              <h3>🏆จัดอันดับผู้เล่น</h3>
               <div style="font-size:12px;color:var(--sub);margin-top:4px">จัดอันดับจากผลการเดิมพันที่ออกผลแล้ว</div>
             </div>
             <button class="btn-sm" onclick="renderLeaderboard()">↻ อัปเดต</button>
@@ -1327,16 +1326,16 @@ input.input-field:focus,select.input-field:focus{border-color:var(--gold);box-sh
   <div class="card wallet-v116">
     <div class="wa-head">
       <div>
-        <h3>💰 ศูนย์อนุมัติ ฝาก / ถอน</h3>
+        <h3>💰 อนุมัติ ฝาก/ถอน (ADMIN) </h3>
         <div class="wa-sub">แสดงเฉพาะรายการที่ต้องจัดการไว้ด้านบน ส่วนประวัติทั้งหมดซ่อนไว้ด้านล่าง</div>
       </div>
-      <button class="btn-sm" onclick="refreshWalletAdminV116()">🔄 รีเฟรช</button>
+      <button class="btn-sm" onclick="refreshWalletAdminV116()">ปุ่มรีเฟรช</button>
     </div>
 
     <div class="wa-summary">
-      <div class="wa-stat"><div class="num" id="wa116-pending-total">0</div><div class="lbl">⏳ รายการรอตรวจ</div></div>
-      <div class="wa-stat"><div class="num" id="wa116-pending-deposit">0</div><div class="lbl">📥 ฝากเงินรอตรวจ</div></div>
-      <div class="wa-stat"><div class="num" id="wa116-pending-withdraw">0</div><div class="lbl">📤 ถอนเงินรอตรวจ</div></div>
+      <div class="wa-stat"><div class="num" id="wa116-pending-total">0</div><div class="lbl">รายการรอตรวจ</div></div>
+      <div class="wa-stat"><div class="num" id="wa116-pending-deposit">0</div><div class="lbl">ฝากเงิน รอตรวจ</div></div>
+      <div class="wa-stat"><div class="num" id="wa116-pending-withdraw">0</div><div class="lbl">ถอนเงิน รอตรวจ</div></div>
     </div>
 
     <div class="wa-toolbar">
@@ -1368,7 +1367,7 @@ input.input-field:focus,select.input-field:focus{border-color:var(--gold);box-sh
 <div id="tab-manage" class="tab-content admin-only-content">
         <div class="card">
           <div class="card-head">
-            <h3>⚽ เพิ่มคู่ / แก้ไข (ADMIN) </h3>
+            <h3> เพิ่มคู่ / แก้ไข (ADMIN) </h3>
           </div>
           
           <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap;">
@@ -1385,8 +1384,8 @@ input.input-field:focus,select.input-field:focus{border-color:var(--gold);box-sh
           <div style="background: var(--panel2); padding: 15px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 15px;">
             <div style="font-size: 13px; color: var(--sub); margin-bottom: 8px;">เลือกฝั่งทีมต่อ (ทีมเต็ง):</div>
             <div style="display: flex; gap: 10px; margin-bottom: 12px;">
-              <button type="button" id="btn-fav-home" class="btn-action" style="background: var(--red); color: #ffffff;" onclick="setAdminFav('home')">🔴 เจ้าบ้าน (ทีมต่อ)</button>
-              <button type="button" id="btn-fav-away" class="btn-action" style="background: var(--panel); color: var(--sub); border: 1px solid var(--border);" onclick="setAdminFav('away')">🔵 ทีมเยือน (ทีมต่อ)</button>
+              <button type="button" id="btn-fav-home" class="btn-action" style="background: var(--red); color: #ffffff;" onclick="setAdminFav('home')">🔴 เจ้าบ้าน (ต่อ)</button>
+              <button type="button" id="btn-fav-away" class="btn-action" style="background: var(--panel); color: var(--sub); border: 1px solid var(--border);" onclick="setAdminFav('away')">🔵 เยือน (ต่อ)</button>
             </div>
 
             <div style="display: flex; gap: 15px; flex-wrap: wrap;">
@@ -3376,7 +3375,7 @@ function renderAdminMatchesBuilder() {
           <div style="font-size:11px;color:var(--sub);margin-top:4px;">กรอกสกอร์เฉพาะคู่ที่ยังไม่สรุป แล้วกดปุ่มเดียวเพื่อสรุปผลทั้งหมด</div>
           <div id="batch-filled-count" style="font-size:11px;color:var(--gold);margin-top:5px;">📝 กรอกสกอร์แล้ว 0 คู่</div>
         </div>
-        <button class="btn-sm btn-success" style="padding:10px 16px;font-weight:900;" onclick="processAllMatchResults()">✅ สรุปผลทั้งหมดที่กรอก</button>
+        <button class="btn-sm btn-success" style="padding:10px 16px;font-weight:900;" onclick="processAllMatchResults()">สรุปผลบอลทั้งหมด</button>
       </div>`;
 
     const container = document.getElementById('admin-matches-builder-list');
@@ -3437,7 +3436,7 @@ function renderAdminMatchesBuilder() {
     const settledSection = `
       <details style="margin-top:14px;border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,.015);" ${settledMatches.length ? '' : 'open'}>
         <summary style="cursor:pointer;padding:12px 14px;font-weight:900;color:var(--green);list-style:none;display:flex;align-items:center;justify-content:space-between;">
-          <span> คู่บอล สรุปผลแล้ว <span style="font-size:11px;color:var(--sub);">(${settledMatches.length} คู่)</span></span>
+          <span> คู่บอลสรุปผลแล้ว <span style="font-size:11px;color:var(--sub);">(${settledMatches.length} คู่)</span></span>
           <span style="display:flex;align-items:center;gap:8px;">
             ${settledMatches.length ? '<button class="btn-sm btn-danger" onclick="event.preventDefault();clearSettledMatches()">🗑️ ล้างรายการที่สรุปแล้ว</button>' : ''}
             <span style="font-size:11px;color:var(--sub);">${settledMatches.length ? 'กดเพื่อดูรายการ' : 'ยังไม่มีรายการ'}</span>
@@ -3833,7 +3832,7 @@ function renderUserBetsHistory() {
       <div class="wa-amount">${Number(w.amount||0).toLocaleString()} FDL</div>
       <div class="wa-meta">เลขไอดีรับเงิน: ${escWalletV116(w.wallet||'-')}</div>
       <div class="wa-actions"><button class="btn-sm btn-success" onclick="approveWallet('${escWalletV116(w.id)}')">✔️ อนุมัติ</button><button class="btn-sm btn-danger" onclick="rejectWallet('${escWalletV116(w.id)}')">❌ ปฏิเสธ</button></div>
-    </div>`).join(''):'<div class="wa-empty">🎉 ไม่มีรายการรออนุมัติที่ตรงกับเงื่อนไข</div>';
+    </div>`).join(''):'<div class="wa-empty">ไม่มีรายการรออนุมัติที่ตรงกับเงื่อนไข</div>';
 
     const rows=all.filter(w=>(walletAdminFilterV116==='all'||w.status===walletAdminFilterV116)&&walletMatchesSearchV116(w,q));
     tbody.innerHTML=rows.length?rows.map(w=>`<tr>
