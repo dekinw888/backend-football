@@ -2037,7 +2037,7 @@ input.input-field:focus,select.input-field:focus{border-color:var(--gold);box-sh
         method: 'POST',
         body: JSON.stringify({ username: phone, password: pass })
       });
-      showCustomAlert('✅ สมัครสมาชิกสำเร็จ', `สร้างบัญชี ${fullname} รอแอดมินอนุมัติเพื่อเข้าสู่ระบบ`);
+      showCustomAlert('✅ สมัครสมาชิกสำเร็จ', `สร้างบัญชี ${fullname} สำเร็จ รอแอดมินอนุมัติเพื่อเข้าสู่ระบบ`);
       switchAuthView('login');
     } catch (error) {
       showCustomAlert('⚠️ สมัครสมาชิกไม่สำเร็จ', error.message);
