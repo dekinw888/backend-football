@@ -13,12 +13,23 @@ function normalizeTeamName(value = '') {
     .trim();
 }
 
+function hasFinishedStatusToken(row = '') {
+  // FIX: `.includes('FT')` matched "FT" ANYWHERE in the row's raw text --
+  // including inside unrelated words, sponsor text, or ad copy that
+  // happens to contain those two letters. That let a still-in-progress
+  // match get treated as finished, capturing whatever score existed at
+  // that moment (often 0-0 early in the game) and locking it in
+  // permanently. This requires "FT" to appear as its own separate token.
+  const tokens = row.toUpperCase().split(/\s+/);
+  return tokens.includes('FT');
+}
+
 function extractGoal7Rows(text = '') {
   const sourceRows = Array.isArray(text)
     ? text
     : text.match(/\d{1,2}:\d{2}[^\n]{0,500}/g) || [];
   const rawRows = sourceRows.filter((row) => {
-    return row.toUpperCase().includes('FT') && /\d+\s*-\s*\d+/.test(row) && !/\?\s*-\s*\?/.test(row);
+    return hasFinishedStatusToken(row) && /\d+\s*-\s*\d+/.test(row) && !/\?\s*-\s*\?/.test(row);
   });
 
   const uniqueRows = [];
@@ -122,8 +133,17 @@ function findGoal7ResultForMatch(rowText, homeTeam, awayTeam, kickoffTime) {
 }
 
 async function syncOpenMatchesFromGoal7() {
+  // FIX: only look at matches whose kickoff was far enough in the past to
+  // plausibly have finished (90 min + stoppage + half-time break). This
+  // means a false "FT" detection can no longer settle a match that is
+  // still genuinely in progress -- it's excluded from consideration
+  // entirely, regardless of what the scraper thinks it saw.
+  const MIN_MINUTES_SINCE_KICKOFF = 135;
   const result = await db.query(
-    "SELECT id, home_team, away_team, kickoff_time, status FROM matches WHERE status IN ('OPEN', 'SCHEDULED', 'PENDING') ORDER BY kickoff_time ASC"
+    `SELECT id, home_team, away_team, kickoff_time, status FROM matches
+     WHERE status IN ('OPEN', 'SCHEDULED', 'PENDING')
+       AND kickoff_time <= NOW() - INTERVAL '${MIN_MINUTES_SINCE_KICKOFF} minutes'
+     ORDER BY kickoff_time ASC`
   );
 
   if (!result.rows.length) {
