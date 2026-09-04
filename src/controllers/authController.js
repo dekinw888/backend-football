@@ -1,6 +1,7 @@
 const db = require('../config/db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { notifyNewUser } = require('../services/discordNotifier'); // เรียกใช้บริการส่งแจ้งเตือน Discord
 
 exports.register = async (req, res) => {
   const { username, password, role } = req.body;
@@ -18,6 +19,9 @@ exports.register = async (req, res) => {
       'INSERT INTO users (username, password_hash, role, status) VALUES ($1, $2, $3, $4) RETURNING id, username, role, status, balance',
       [username, hashedPassword, userRole, userRole === 'ADMIN' ? 'APPROVED' : 'PENDING']
     );
+
+    // ส่งแจ้งเตือนไปยังห้อง Discord เมื่อมีสมาชิกใหม่สมัครสำเร็จ
+    notifyNewUser(username);
 
     res.status(201).json({ message: 'User registered successfully', user: newUser.rows[0] });
   } catch (err) {
