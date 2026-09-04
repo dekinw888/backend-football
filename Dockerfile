@@ -5,7 +5,7 @@ WORKDIR /usr/src/app
 
 # Install app dependencies.
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm install --only=production
 
 # Install Chromium for the goal7.co result scraper.
 RUN npx playwright install --with-deps chromium
