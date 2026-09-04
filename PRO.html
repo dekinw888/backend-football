@@ -2037,7 +2037,7 @@ input.input-field:focus,select.input-field:focus{border-color:var(--gold);box-sh
         method: 'POST',
         body: JSON.stringify({ username: phone, password: pass })
       });
-      showCustomAlert('✅ สมัครสมาชิกสำเร็จ', `สร้างบัญชี ${fullname} เรียบร้อยแล้ว กรุณาเข้าสู่ระบบ`);
+      showCustomAlert('✅ สมัครสมาชิกสำเร็จ', `สร้างบัญชี ${fullname} รอแอดมินอนุมัติเพื่อเข้าสู่ระบบ`);
       switchAuthView('login');
     } catch (error) {
       showCustomAlert('⚠️ สมัครสมาชิกไม่สำเร็จ', error.message);
@@ -3698,7 +3698,7 @@ function renderUserBetsHistory() {
         if (dbUser) dbUser.credit = currentUser.credit;
         await loadWalletHistoryFromApi();
         updateCreditDisplay();
-        showCustomAlert('✅ ส่งเรื่องสำเร็จ', 'ระบบได้รับเรื่องของคุณแล้ว กรุณารอแอดมินอนุมัติ 5-10 นาที');
+        showCustomAlert('✅ ส่งเรื่องสำเร็จ', 'ระบบดำเนินการแล้ว รอแอดมินอนุมัติ 5-10 นาที');
         document.getElementById('wallet-amount').value = '';
         document.getElementById('wallet-account-id').value = '';
         toggleWalletHistory();
@@ -3730,7 +3730,7 @@ function renderUserBetsHistory() {
     }
 
     saveData();
-    showCustomAlert('✅ ส่งเรื่องสำเร็จ', 'ระบบได้รับเรื่องของคุณแล้ว กรุณารอแอดมินอนุมัติ 5-10 นาที');
+    showCustomAlert('✅ ส่งเรื่องสำเร็จ', 'ระบบดำเนินการแล้ว รอแอดมินอนุมัติ 5-10 นาที');
     
     document.getElementById('wallet-amount').value = '';
     document.getElementById('wallet-account-id').value = '';
