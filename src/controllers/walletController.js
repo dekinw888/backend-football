@@ -1,5 +1,6 @@
 const db = require('../config/db');
 const { notifyDeposit, notifyWithdrawal } = require('../services/discordNotifier'); // เรียกใช้บริการแจ้งเตือน
+const socketService = require('../services/socket');
 
 exports.createRequest = async (req, res) => {
   const userId = req.user.id;
@@ -40,6 +41,7 @@ exports.createRequest = async (req, res) => {
     } else if (type === 'withdraw') {
       notifyWithdrawal(username, numericAmount, wallet, createdRequest.id);
     }
+    socketService.emitSafe('wallet:updated', { userId, reason: 'requested' });
 
     res.status(201).json({ request: createdRequest, balance });
   } catch (error) {
@@ -104,6 +106,7 @@ exports.reviewRequest = async (req, res) => {
       [nextStatus, request.id]
     );
     await client.query('COMMIT');
+    socketService.emitSafe('wallet:updated', { userId: request.user_id, reason: 'reviewed' });
     res.json({ request: updated.rows[0] });
   } catch (error) {
     await client.query('ROLLBACK');
